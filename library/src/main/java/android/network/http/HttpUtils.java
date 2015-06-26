@@ -22,15 +22,17 @@ public class HttpUtils {
     private static Map<String, String> cookieCache = new HashMap<String, String>();
 
     public static String httpGet(String url, Map<String, String> params) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for(Map.Entry<String, String> entry : params.entrySet()){
-            sb.append(entry.getKey()).append("=").append(urlEncode(entry.getValue())).append("&");
-        }
-        sb.deleteCharAt(sb.lastIndexOf("&"));
-        if(url.indexOf("?")>0){
-            url += sb.toString();
-        }else{
-            url = url + "?" + sb.toString();
+        if(params != null){
+            StringBuilder sb = new StringBuilder();
+            for(Map.Entry<String, String> entry : params.entrySet()){
+                sb.append(entry.getKey()).append("=").append(urlEncode(entry.getValue())).append("&");
+            }
+            sb.deleteCharAt(sb.lastIndexOf("&"));
+            if(url.indexOf("?")>0){
+                url += sb.toString();
+            }else{
+                url = url + "?" + sb.toString();
+            }
         }
         return httpGet(url);
     }
