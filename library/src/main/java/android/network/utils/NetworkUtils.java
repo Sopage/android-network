@@ -3,12 +3,18 @@ package android.network.utils;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.network.model.NetworkType;
 import android.telephony.TelephonyManager;
 
 /**
  * Created by sanders on 15/6/27.
  */
 public class NetworkUtils {
+
+    public static boolean isNetworkContented(Context context) {
+        return getNetworkType(context) == NetworkType.NET_UNKNOWN ? false : true;
+    }
+
     public static NetworkType getNetworkType(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeInfo = cm.getActiveNetworkInfo();
