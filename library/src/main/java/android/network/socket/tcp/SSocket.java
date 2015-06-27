@@ -2,22 +2,18 @@ package android.network.socket.tcp;
 
 import android.network.socket.Receiver;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 
 public class SSocket {
 
     private Socket mSocket;
     private OutputStream out;
     private InputStream in;
-    private Receiver receiver;
 
-    public SSocket(Receiver receiver) {
-        this.receiver = receiver;
+    public SSocket() {
     }
 
     public void connect(String host, int port) throws Exception {
@@ -26,11 +22,10 @@ public class SSocket {
         if (mSocket.isConnected()) {
             out = mSocket.getOutputStream();
             in = mSocket.getInputStream();
-            receiver.connected();
         }
     }
 
-    public void write(byte[] buffer) throws IOException {
+    public void write(byte[] buffer) throws Exception {
         if (out != null) {
             out.write(buffer);
             out.flush();
@@ -44,40 +39,39 @@ public class SSocket {
         if (!mSocket.isInputShutdown()) {
             try {
                 mSocket.shutdownInput();
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
         if (!mSocket.isOutputShutdown()) {
             try {
                 mSocket.shutdownOutput();
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
         if (out != null) {
             try {
                 out.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
         if (in != null) {
             try {
                 in.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
         if (mSocket.isConnected() || !mSocket.isClosed()) {
             try {
                 mSocket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
-        receiver.disconnect();
         out = null;
         in = null;
         mSocket = null;
     }
 
-    public void read() throws IOException {
+    public void read(Receiver receiver) throws Exception {
         if (in != null) {
             byte[] buffer = new byte[1024 * 3];
             byte[] tmpBuffer;

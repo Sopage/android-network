@@ -69,8 +69,8 @@ public class MainActivity extends ActionBarActivity {
 
     @Override
     public void onBackPressed() {
-        udpSocketClient.stop();
-        tcpSocketClient.stop();
+        udpSocketClient.close();
+        tcpSocketClient.close();
         super.onBackPressed();
     }
 }

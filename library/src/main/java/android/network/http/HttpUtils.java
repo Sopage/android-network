@@ -201,37 +201,37 @@ public class HttpUtils {
         final String endLine = "--" + BOUNDARY + "--\r\n";//数据结束标志
         int fileDataLength = 0;
         for (File uploadFile : files) {//得到文件类型数据的总长度
-            StringBuilder fileExplain = new StringBuilder();
-            fileExplain.append("--");
-            fileExplain.append(BOUNDARY);
-            fileExplain.append("\r\n");
-            fileExplain.append("Content-Disposition: form-data;name=\"" + fieldName + "\";filename=\"" + uploadFile.getName() + "\"\r\n");
-            fileExplain.append("Content-Type: application/octet-stream\r\n\r\n");
-            fileExplain.append("\r\n");
-            fileDataLength += fileExplain.length();
+            StringBuilder fileBody = new StringBuilder();
+            fileBody.append("--");
+            fileBody.append(BOUNDARY);
+            fileBody.append("\r\n");
+            fileBody.append("Content-Disposition: form-data;name=\"" + fieldName + "\";filename=\"" + uploadFile.getName() + "\"\r\n");
+            fileBody.append("Content-Type: application/octet-stream\r\n\r\n");
+            fileBody.append("\r\n");
+            fileDataLength += fileBody.length();
             fileDataLength += uploadFile.length();
         }
-        StringBuilder textEntity = new StringBuilder();
+        StringBuilder textBody = new StringBuilder();
         if (params != null) {
             for (Map.Entry<String, String> entry : params.entrySet()) {//构造文本类型参数的实体数据
-                textEntity.append("--");
-                textEntity.append(BOUNDARY);
-                textEntity.append("\r\n");
-                textEntity.append("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"\r\n\r\n");
-                textEntity.append(entry.getValue());
-                textEntity.append("\r\n");
+                textBody.append("--");
+                textBody.append(BOUNDARY);
+                textBody.append("\r\n");
+                textBody.append("Content-Disposition: form-data; name=\"" + entry.getKey() + "\"\r\n\r\n");
+                textBody.append(entry.getValue());
+                textBody.append("\r\n");
             }
         }
         //计算传输给服务器的实体数据总长度
-        int dataLength = textEntity.toString().getBytes().length + fileDataLength + endLine.getBytes().length;
+        int dataLength = textBody.toString().getBytes().length + fileDataLength + endLine.getBytes().length;
         URL url = new URL(uploadUrl);
         String host = url.getHost();
         int port = url.getPort() == -1 ? 80 : url.getPort();
         Socket socket = new Socket(InetAddress.getByName(url.getHost()), port);
         OutputStream outStream = socket.getOutputStream();
         //下面完成HTTP请求头的发送
-        String requestMethod = "POST " + url.getPath() + " HTTP/1.1\r\n";
-        outStream.write(requestMethod.getBytes());
+        String method = "POST " + url.getPath() + " HTTP/1.1\r\n";
+        outStream.write(method.getBytes());
         String accept = "Accept: */*\r\n";
         outStream.write(accept.getBytes());
         outStream.write("Accept-Charset: UTF-8\r\n".getBytes());
@@ -253,16 +253,16 @@ public class HttpUtils {
         //写完HTTP请求头后根据HTTP协议再写一个回车换行
         outStream.write("\r\n".getBytes());
         //把所有文本类型的实体数据发送出来
-        outStream.write(textEntity.toString().getBytes());
+        outStream.write(textBody.toString().getBytes());
         //把所有文件类型的实体数据发送出来
         for (File uploadFile : files) {
-            StringBuilder fileEntity = new StringBuilder();
-            fileEntity.append("--");
-            fileEntity.append(BOUNDARY);
-            fileEntity.append("\r\n");
-            fileEntity.append("Content-Disposition: form-data;name=\"" + fieldName + "\";filename=\"" + uploadFile.getName() + "\"\r\n");
-            fileEntity.append("Content-Type: application/octet-stream\r\n\r\n");
-            outStream.write(fileEntity.toString().getBytes());
+            StringBuilder fileBody = new StringBuilder();
+            fileBody.append("--");
+            fileBody.append(BOUNDARY);
+            fileBody.append("\r\n");
+            fileBody.append("Content-Disposition: form-data;name=\"" + fieldName + "\";filename=\"" + uploadFile.getName() + "\"\r\n");
+            fileBody.append("Content-Type: application/octet-stream\r\n\r\n");
+            outStream.write(fileBody.toString().getBytes());
             byte[] buffer = new byte[1024];
             int len;
             FileInputStream inputStream = new FileInputStream(uploadFile);
@@ -281,6 +281,7 @@ public class HttpUtils {
         }
         String line;
         while ((line = reader.readLine()) != null) {
+            //这个地方要解析下http报文及内容，暂时不做处理，有时间在整！
         }
         reader.close();
         outStream.close();

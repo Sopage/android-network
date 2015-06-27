@@ -1,9 +1,7 @@
 package android.network.socket.udp;
 
 import android.network.socket.Receiver;
-import android.util.Log;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketAddress;
@@ -23,7 +21,7 @@ public class SSocket {
         this.receiver = receiver;
     }
 
-    public void receive() throws IOException {
+    public void receive() throws Exception {
         mSocket.receive(mPacket);
         if (receiver != null) {
             int len = mPacket.getLength();
@@ -33,12 +31,12 @@ public class SSocket {
         }
     }
 
-    public void send(SocketAddress address, byte[] buffer) throws IOException {
+    public void send(SocketAddress address, byte[] buffer) throws Exception {
         if (buffer.length < dataLength) {
             DatagramPacket sendPacket = new DatagramPacket(buffer, buffer.length, address);
             mSocket.send(sendPacket);
         } else {
-            Log.e("ESA", "发送数据包大于限定长度");
+            System.out.println("UDP发送数据包大于限定长度");
         }
     }
 

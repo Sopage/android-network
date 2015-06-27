@@ -1,12 +1,9 @@
 package android.network.socket.udp;
 
 import android.network.socket.Receiver;
-import android.util.Log;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.util.Vector;
 
 public class UDPSocketClient implements Runnable {
@@ -21,36 +18,31 @@ public class UDPSocketClient implements Runnable {
         this.receiver = receiver;
     }
 
-    public UDPSocketClient(SocketAddress address, Receiver receiver) {
-        this.address = address;
-        this.receiver = receiver;
-    }
-
     @Override
     public void run() {
         try {
             mSocket = new SSocket(receiver);
             sendThread = new SendThread(mSocket);
             sendThread.setAddress(address);
-        } catch (SocketException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         while (isConnect) {
             try {
                 mSocket.receive();
-            } catch (IOException e) {
+            } catch (Exception e) {
             }
         }
         sendThread.close();
         mSocket.close();
-        Log.e("ESA", "UDP receive OVER");
+        System.out.println("UDP RECEIVE OVER");
     }
 
     public void send(byte[] data) {
         sendThread.send(data);
     }
 
-    public void stop() {
+    public void close() {
         isConnect = false;
         sendThread.close();
         mSocket.close();
@@ -58,7 +50,7 @@ public class UDPSocketClient implements Runnable {
 
     private static class SendThread extends Thread {
 
-        private final Vector<byte[]> datas = new Vector<byte[]>();
+        private static final Vector<byte[]> datas = new Vector<byte[]>();
         private boolean isSend = true;
         private SSocket mSocket;
         private SocketAddress address;
@@ -85,7 +77,7 @@ public class UDPSocketClient implements Runnable {
                     if (isSend) {
                         try {
                             mSocket.send(address, buffer);
-                        } catch (IOException e) {
+                        } catch (Exception e) {
                             continue;
                         }
                     } else {
@@ -93,7 +85,7 @@ public class UDPSocketClient implements Runnable {
                     }
                 }
             }
-            Log.e("ESA", "UDP send OVER");
+            System.out.println("UDP SEND OVER");
         }
 
         public synchronized void close() {
@@ -110,4 +102,44 @@ public class UDPSocketClient implements Runnable {
             this.notify();
         }
     }
+
+//    public static void main(String[] args) throws Exception {
+//        new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    DatagramSocket server = new DatagramSocket(new InetSocketAddress("127.0.0.1", 9999));
+//                    byte[] recvBuf = new byte[1024 * 3];
+//                    DatagramPacket recvPacket = new DatagramPacket(recvBuf, recvBuf.length);
+//                    while (true) {
+//                        server.receive(recvPacket);
+//                        String recvStr = new String(recvPacket.getData(), 0, recvPacket.getLength());
+//                        String sendStr = "Hello ! I'm Server - " + recvStr;
+//                        byte[] sendBuf = sendStr.getBytes();
+//                        DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, recvPacket.getSocketAddress());
+//                        server.send(sendPacket);
+//                    }
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }.start();
+//        UDPSocketClient client = new UDPSocketClient("127.0.0.1", 9999, new Receiver() {
+//            @Override
+//            public void receive(byte[] buffer) {
+//                System.out.println(new String(buffer));
+//            }
+//        });
+//        new Thread(client).start();
+//        int i = 1;
+//        while (true) {
+//            Thread.sleep(1000);
+//            if(i == 10){
+//                client.close();
+//                return;
+//            }
+//            client.send(("Your Name Client " + i).getBytes());
+//            i++;
+//        }
+//    }
 }
