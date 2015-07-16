@@ -22,15 +22,15 @@ public class HttpUtils {
     private static Map<String, String> cookieCache = new HashMap<String, String>();
 
     public static String httpGet(String url, Map<String, String> params) throws IOException {
-        if(params != null){
+        if (params != null && params.size() > 0) {
             StringBuilder sb = new StringBuilder();
-            for(Map.Entry<String, String> entry : params.entrySet()){
+            for (Map.Entry<String, String> entry : params.entrySet()) {
                 sb.append(entry.getKey()).append("=").append(urlEncode(entry.getValue())).append("&");
             }
             sb.deleteCharAt(sb.lastIndexOf("&"));
-            if(url.indexOf("?")>0){
+            if (url.indexOf("?") > 0) {
                 url += sb.toString();
-            }else{
+            } else {
                 url = url + "?" + sb.toString();
             }
         }
@@ -84,7 +84,7 @@ public class HttpUtils {
         conn.setDoInput(true);
         conn.setDoOutput(true);
         StringBuilder sb = new StringBuilder();
-        if (params != null) {
+        if (params != null && params.size() > 0) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 sb.append(entry.getKey()).append("=").append(urlEncode(entry.getValue())).append("&");
             }
@@ -132,7 +132,7 @@ public class HttpUtils {
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
         StringBuilder textEntity = new StringBuilder();
-        if (params != null) {
+        if (params != null && params.size() > 0) {
             for (Map.Entry<String, String> entry : params.entrySet()) {//构造文本类型参数的实体数据
                 textEntity.append("--").append(boundary).append("\r\n");
                 textEntity.append("Content-Disposition: form-data; name=\"").append(entry.getKey()).append("\"\r\n\r\n");
@@ -212,7 +212,7 @@ public class HttpUtils {
             fileDataLength += uploadFile.length();
         }
         StringBuilder textBody = new StringBuilder();
-        if (params != null) {
+        if (params != null && params.size() > 0) {
             for (Map.Entry<String, String> entry : params.entrySet()) {//构造文本类型参数的实体数据
                 textBody.append("--");
                 textBody.append(BOUNDARY);
