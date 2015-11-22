@@ -14,12 +14,25 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class HttpUtils {
 
     private static Map<String, String> cookieCache = new HashMap<String, String>();
+    private static SSLContext sslcontext;
+    private static HostnameVerifier hostnameVerifier;
 
     public static String httpGet(String url, Map<String, String> params) throws IOException {
         if (params != null && params.size() > 0) {
@@ -40,7 +53,7 @@ public class HttpUtils {
     public static String httpGet(String url) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+        HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -71,7 +84,7 @@ public class HttpUtils {
     public static String httpPost(String url, Map<String, String> params) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+        HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -119,7 +132,7 @@ public class HttpUtils {
         String endLine = "\r\n--" + boundary + "--\r\n";
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+        HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setDoInput(true);
         conn.setDoOutput(true);
@@ -292,7 +305,7 @@ public class HttpUtils {
     public static boolean download(String url, File saveFile) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+        HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -334,4 +347,58 @@ public class HttpUtils {
             return params;
         }
     }
+
+    private static HttpURLConnection getHttpURLConnection(URL url) throws IOException {
+        HttpURLConnection conn;
+        if (url.toString().startsWith("https")) {
+            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+            connection.setSSLSocketFactory(getSslcontext().getSocketFactory());
+            connection.setHostnameVerifier(getHostnameVerifier());
+            conn = connection;
+        } else {
+            conn = (HttpURLConnection) url.openConnection();
+        }
+        return conn;
+    }
+
+    private static SSLContext getSslcontext() {
+        if (sslcontext == null) {
+            TrustManager trustManager = new X509TrustManager() {
+                @Override
+                public void checkClientTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+
+                }
+
+                @Override
+                public X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+            };
+            try {
+                sslcontext = SSLContext.getInstance("TLS");
+                sslcontext.init(null, new TrustManager[]{trustManager}, new java.security.SecureRandom());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                e.printStackTrace();
+            }
+        }
+        return sslcontext;
+    }
+
+    private static HostnameVerifier getHostnameVerifier() {
+        if (hostnameVerifier == null) {
+            hostnameVerifier = new HostnameVerifier() {
+                @Override
+                public boolean verify(String s, SSLSession sslSession) {
+                    return true;
+                }
+            };
+        }
+        return hostnameVerifier;
+    }
+
 }
