@@ -1,6 +1,6 @@
 package android.network.socket.codec;
 
-public interface Handle<T> {
+public interface Handle<D> {
 
     int STATUS_CONNECTED = 0;
 
@@ -10,6 +10,6 @@ public interface Handle<T> {
 
     void onStatus(int status);
 
-    void onReceive(Object object);
+    void onReceive(D data);
 
 }

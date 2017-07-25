@@ -2,8 +2,8 @@ package android.network.socket.codec;
 
 import java.nio.ByteBuffer;
 
-public interface Encode<T> {
+public interface Encode<E> {
 
-    void encode(T object, ByteBuffer buffer);
+    void encode(E data, ByteBuffer buffer);
 
 }

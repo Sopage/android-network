@@ -2,8 +2,8 @@ package android.network.socket.codec;
 
 import java.nio.ByteBuffer;
 
-public interface Decode<T> {
+public interface Decode<D> {
 
-    T decode(ByteBuffer buffer);
+    D decode(ByteBuffer buffer);
 
 }
