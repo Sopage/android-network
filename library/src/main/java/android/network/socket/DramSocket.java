@@ -56,6 +56,12 @@ public class DramSocket implements Runnable {
         if (running) {
             return;
         }
+        if(pool != null){
+            if(!pool.isShutdown()){
+                pool.shutdown();
+            }
+            pool = null;
+        }
         pool = Executors.newFixedThreadPool(2);
         running = true;
         writeRunnable = new WriteRunnable(encode);
