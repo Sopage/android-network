@@ -26,10 +26,6 @@ public class DramSocket implements Runnable {
     private Handle handle;
     private boolean running;
 
-    public DramSocket() {
-        pool = Executors.newFixedThreadPool(2);
-    }
-
     public void connect(String host, int port) {
         this.address = new InetSocketAddress(host, port);
     }
@@ -60,6 +56,7 @@ public class DramSocket implements Runnable {
         if (running) {
             return;
         }
+        pool = Executors.newFixedThreadPool(2);
         running = true;
         writeRunnable = new WriteRunnable(encode);
         pool.execute(this);
@@ -83,12 +80,20 @@ public class DramSocket implements Runnable {
                     try {
                         handle.onStatus(Handle.STATUS_FAIL);
                         socket = null;
-                        this.wait(6000);
+                        if (running) {
+                            this.wait(6000);
+                        }
                     } catch (InterruptedException ie) {
                         ie.printStackTrace();
                     }
                 }
             }
+        }
+    }
+
+    public void send(Object data) {
+        if (writeRunnable != null) {
+            writeRunnable.send(data);
         }
     }
 
@@ -106,6 +111,9 @@ public class DramSocket implements Runnable {
             if (handle != null) {
                 handle.onStatus(Handle.STATUS_DISCONNECT);
             }
+        }
+        if (pool != null && !pool.isShutdown()) {
+            pool.shutdown();
         }
 
     }
@@ -156,6 +164,7 @@ public class DramSocket implements Runnable {
         private Encode<E> encode;
         private OutputStream stream;
         private boolean sending;
+        private ByteBuffer buffer = ByteBuffer.allocate(102400);
 
         private WriteRunnable(Encode<E> encode) {
             this.encode = encode;
@@ -180,10 +189,12 @@ public class DramSocket implements Runnable {
 
                     while (vector.size() > 0) {
                         E data = vector.remove(0);
-                        encode.encode(data, null);
+                        buffer.clear();
+                        encode.encode(data, buffer);
+                        buffer.flip();
                         if (stream != null) {
                             try {
-                                stream.write(1);
+                                stream.write(buffer.array(), 0, buffer.limit());
                                 stream.flush();
                             } catch (Exception e) {
                                 e.printStackTrace();
