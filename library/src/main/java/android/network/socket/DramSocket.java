@@ -134,16 +134,18 @@ public class DramSocket implements Runnable {
         InputStream stream = socket.getInputStream();
         while ((readLength = stream.read(bytes)) > 0) {
             int length;
-            if ((length = (cacheLength + readLength)) > cache.length) {
+            if((length = (cacheLength + readLength)) > cache.length){
                 //缓存区已满，丢弃读取的数据
                 continue;
             }
+
+            System.out.println(String.format("前 cache -> length=%d", cacheLength));
+            System.out.println(String.format("前 buffer -> position=%d, limit=%d, remaining=%d", buffer.position(), buffer.limit(), buffer.remaining()));
+
             //把读取到的数据拷贝到上次缓存缓冲区的后面
             System.arraycopy(bytes, 0, cache, cacheLength, readLength);
             //缓存长度=上次的缓存长度+读取的数据长度
             cacheLength = length;
-            //清除重置解码的ByteBuffer
-            buffer.clear();
             //把缓存放入buffer中解码
             buffer.put(cache, 0, cacheLength);
             //切换到读模式
@@ -151,8 +153,8 @@ public class DramSocket implements Runnable {
             //先标记当前开始读取的点，用于后面不够解码后reset操作
             buffer.mark();
 
-            System.out.println(String.format("cache -> length=%d", cacheLength));
-            System.out.println(String.format("buffer -> position=%d, limit=%d, remaining=%d", buffer.position(), buffer.limit(), buffer.remaining()));
+            System.out.println(String.format("中 cache -> length=%d", cacheLength));
+            System.out.println(String.format("中 buffer -> position=%d, limit=%d, remaining=%d", buffer.position(), buffer.limit(), buffer.remaining()));
 
             D data;
             //判断如果ByteBuffer后面有可读数据并且解码一次
@@ -194,6 +196,10 @@ public class DramSocket implements Runnable {
                 //如果没有可读的数据 缓存数据长度为0
                 cacheLength = 0;
             }
+            //清除重置解码的ByteBuffer
+            buffer.clear();
+            System.out.println(String.format("后 cache -> length=%d", cacheLength));
+            System.out.println(String.format("后 buffer -> position=%d, limit=%d, remaining=%d", buffer.position(), buffer.limit(), buffer.remaining()));
         }
     }
 
@@ -212,14 +218,19 @@ public class DramSocket implements Runnable {
         String info = "position=%d, limit=%d, remaining=%d, str=%s";
         while ((readLength = stream.read(bytes)) > 0) {
             //把position下标设置到最后面用户继续往后拼接数据
+            if(cache.limit() + readLength > cache.capacity()){
+                //缓存区已满，丢弃读取的数据
+                continue;
+            }
+            System.out.println("前 cache -> " + String.format(info, cache.position(), cache.limit(), cache.remaining(), ""));
+            System.out.println("前 buffer -> " + String.format(info, buffer.position(), buffer.limit(), buffer.remaining(), ""));
             cache.position(cache.limit());
             //重置limit的长度为缓存最大长度
             cache.limit(cache.capacity());
+            //将读取到的数据放入缓存buffer
             cache.put(bytes, 0, readLength);
             //计算cache buffer数据相关信息
             cache.flip();
-            //清除重置解码的ByteBuffer
-            buffer.clear();
             //把缓存重新加入到buffer中进行解码
             buffer.put(cache.array(), cache.position(), cache.limit());
             //计算buffer数据相关信息
@@ -227,8 +238,8 @@ public class DramSocket implements Runnable {
             //先标记当前开始读取的点，用于后面不够解码后reset操作
             buffer.mark();
 
-            System.out.println("cache -> " + String.format(info, cache.position(), cache.limit(), cache.remaining(), ""));
-            System.out.println("buffer -> " + String.format(info, buffer.position(), buffer.limit(), buffer.remaining(), ""));
+            System.out.println("中 cache -> " + String.format(info, cache.position(), cache.limit(), cache.remaining(), ""));
+            System.out.println("中 buffer -> " + String.format(info, buffer.position(), buffer.limit(), buffer.remaining(), ""));
 
             D data;
             //判断如果ByteBuffer后面有可读数据并且解码一次
@@ -267,6 +278,11 @@ public class DramSocket implements Runnable {
             }
             //计算cache buffer数据相关信息
             cache.flip();
+            //清除重置解码的ByteBuffer
+            buffer.clear();
+
+            System.out.println("后 cache -> " + String.format(info, cache.position(), cache.limit(), cache.remaining(), ""));
+            System.out.println("后 buffer -> " + String.format(info, buffer.position(), buffer.limit(), buffer.remaining(), ""));
         }
     }
 
