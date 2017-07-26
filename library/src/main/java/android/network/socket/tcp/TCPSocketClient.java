@@ -49,7 +49,6 @@ public class TCPSocketClient implements Runnable {
                 mSocket.disconnect();
             }
         }
-        System.out.println("TCP READ END");
     }
 
     public void write(byte[] buffer) {
@@ -102,7 +101,6 @@ public class TCPSocketClient implements Runnable {
                     }
                 }
             }
-            System.out.println("TCP WRITE END");
         }
 
         public synchronized void write(byte[] buffer) {
@@ -115,38 +113,4 @@ public class TCPSocketClient implements Runnable {
             this.notify();
         }
     }
-
-    static TCPSocketClient client;
-
-//    public static void main(String[] args) throws Exception {
-//        final StringBuilder sb = new StringBuilder("GET / HTTP/1.1\r\n");
-//        sb.append("Connection: Keep-Alive").append("\r\n");
-//        sb.append("Accept: */*").append("\r\n");
-//        sb.append("Accept-Charset: UTF-8").append("\r\n");
-//        sb.append("Accept-Language: zh-CN").append("\r\n");
-//        sb.append("Host: www.baidu.com").append("\r\n");
-//        sb.append("\r\n").append("\r\n");
-//        System.out.println("init");
-//        client = new TCPSocketClient("www.baidu.com", 80, new Receiver() {
-//            @Override
-//            public void receive(byte[] buffer) {
-//                System.out.println("receive");
-//                String s = new String(buffer);
-//                System.out.println(s);
-//                client.close();
-//            }
-//
-//            @Override
-//            public void connected() {
-//                System.out.println("connected");
-//                client.write(sb.toString().getBytes());
-//            }
-//
-//            @Override
-//            public void disconnect() {
-//                System.out.println("disconnect");
-//            }
-//        });
-//        new Thread(client).start();
-//    }
 }

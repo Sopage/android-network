@@ -352,7 +352,7 @@ public class HttpUtils {
         HttpURLConnection conn;
         if (url.toString().startsWith("https")) {
             HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-            connection.setSSLSocketFactory(getSslcontext().getSocketFactory());
+            connection.setSSLSocketFactory(getSSLContext().getSocketFactory());
             connection.setHostnameVerifier(getHostnameVerifier());
             conn = connection;
         } else {
@@ -361,7 +361,7 @@ public class HttpUtils {
         return conn;
     }
 
-    private static SSLContext getSslcontext() {
+    private static SSLContext getSSLContext() {
         if (sslcontext == null) {
             TrustManager trustManager = new X509TrustManager() {
                 @Override

@@ -35,7 +35,6 @@ public class UDPSocketClient implements Runnable {
         }
         sendThread.close();
         mSocket.close();
-        System.out.println("UDP RECEIVE OVER");
     }
 
     public void send(byte[] data) {
@@ -85,7 +84,6 @@ public class UDPSocketClient implements Runnable {
                     }
                 }
             }
-            System.out.println("UDP SEND OVER");
         }
 
         public synchronized void close() {
@@ -102,44 +100,4 @@ public class UDPSocketClient implements Runnable {
             this.notify();
         }
     }
-
-//    public static void main(String[] args) throws Exception {
-//        new Thread() {
-//            @Override
-//            public void run() {
-//                try {
-//                    DatagramSocket server = new DatagramSocket(new InetSocketAddress("127.0.0.1", 9999));
-//                    byte[] recvBuf = new byte[1024 * 3];
-//                    DatagramPacket recvPacket = new DatagramPacket(recvBuf, recvBuf.length);
-//                    while (true) {
-//                        server.receive(recvPacket);
-//                        String recvStr = new String(recvPacket.getData(), 0, recvPacket.getLength());
-//                        String sendStr = "Hello ! I'm Server - " + recvStr;
-//                        byte[] sendBuf = sendStr.getBytes();
-//                        DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, recvPacket.getSocketAddress());
-//                        server.send(sendPacket);
-//                    }
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }.start();
-//        UDPSocketClient client = new UDPSocketClient("127.0.0.1", 9999, new Receiver() {
-//            @Override
-//            public void receive(byte[] buffer) {
-//                System.out.println(new String(buffer));
-//            }
-//        });
-//        new Thread(client).start();
-//        int i = 1;
-//        while (true) {
-//            Thread.sleep(1000);
-//            if(i == 10){
-//                client.close();
-//                return;
-//            }
-//            client.send(("Your Name Client " + i).getBytes());
-//            i++;
-//        }
-//    }
 }
