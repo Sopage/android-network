@@ -1,7 +1,6 @@
 package android.network.socket;
 
-import android.network.socket.codec.Decode;
-import android.network.socket.codec.Encode;
+import android.network.socket.codec.Codec;
 import android.network.socket.codec.Handle;
 
 import java.io.Closeable;
@@ -21,8 +20,7 @@ public class DramSocket implements Runnable {
     private ExecutorService pool;
     private Socket socket;
     private WriteRunnable writeRunnable;
-    private Encode encode;
-    private Decode decode;
+    private Codec codec;
     private Handle handle;
     private boolean running;
 
@@ -34,18 +32,14 @@ public class DramSocket implements Runnable {
         this.address = address;
     }
 
-    public <E, D> void processor(Encode<E> encode, Decode<D> decode, Handle<D> handle) {
-        this.encode = encode;
-        this.decode = decode;
+    public <D, E> void setCodec(Codec<D, E> codec, Handle<D> handle) {
+        this.codec = codec;
         this.handle = handle;
     }
 
     public void start() {
-        if (encode == null) {
-            throw new NullPointerException("请设置消息编码器");
-        }
-        if (decode == null) {
-            throw new NullPointerException("请设置消息解码器");
+        if (codec == null) {
+            throw new NullPointerException("请设置编解码器");
         }
         if (handle == null) {
             throw new NullPointerException("请设置消息处理器");
@@ -56,15 +50,15 @@ public class DramSocket implements Runnable {
         if (running) {
             return;
         }
-        if(pool != null){
-            if(!pool.isShutdown()){
+        if (pool != null) {
+            if (!pool.isShutdown()) {
                 pool.shutdown();
             }
             pool = null;
         }
         pool = Executors.newFixedThreadPool(2);
         running = true;
-        writeRunnable = new WriteRunnable(encode);
+        writeRunnable = new WriteRunnable(codec);
         pool.execute(this);
     }
 
@@ -79,7 +73,7 @@ public class DramSocket implements Runnable {
                         writeRunnable.setOutputStream(socket.getOutputStream());
                         pool.execute(writeRunnable);
                         handle.onStatus(Handle.STATUS_CONNECTED);
-                        read(socket, decode, handle);//阻塞方法
+                        read(socket, codec, handle);//阻塞方法
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -124,7 +118,7 @@ public class DramSocket implements Runnable {
 
     }
 
-    private <D> void read(Socket socket, Decode<D> decode, Handle<D> handle) throws Exception {
+    private static <D, E> void read(Socket socket, Codec<D, E> codec, Handle handle) throws Exception {
         final ByteBuffer buffer = ByteBuffer.allocate(102400);//解码需要操作的buffer
         byte[] bytes = new byte[buffer.capacity()];//读取的缓冲区
         byte[] cache = new byte[buffer.capacity()];//缓存没有被解码的缓冲区
@@ -140,7 +134,7 @@ public class DramSocket implements Runnable {
             buffer.flip();//切换到读模式
             buffer.mark();//先标记当前开始读取的点，用于后面不够解码后reset操作
             D data;
-            while (buffer.hasRemaining() && ((data = decode.decode(buffer)) != null)) {//判断如果ByteBuffer后面有可读数据并且解码一次
+            while (buffer.hasRemaining() && ((data = codec.decode(buffer)) != null)) {//判断如果ByteBuffer后面有可读数据并且解码一次
                 handle.onReceive(data);//把解码的数据回调给Handler
                 if (buffer.hasRemaining()) {//再次判断ByteBuffer后面是否还有可读数据
                     int remaining = buffer.remaining();//ByteBuffer剩余没有读取的数据长度
@@ -165,15 +159,15 @@ public class DramSocket implements Runnable {
         }
     }
 
-    private static final class WriteRunnable<E> implements Runnable {
+    public static final class WriteRunnable<D, E> implements Runnable {
         private Vector<E> vector = new Vector<>();
-        private Encode<E> encode;
+        private Codec<D, E> codec;
         private OutputStream stream;
         private boolean sending;
         private ByteBuffer buffer = ByteBuffer.allocate(102400);
 
-        private WriteRunnable(Encode<E> encode) {
-            this.encode = encode;
+        private WriteRunnable(Codec<D, E> codec) {
+            this.codec = codec;
         }
 
         private void setOutputStream(OutputStream stream) {
@@ -196,7 +190,7 @@ public class DramSocket implements Runnable {
                     while (vector.size() > 0) {
                         E data = vector.remove(0);
                         buffer.clear();
-                        encode.encode(data, buffer);
+                        codec.encode(data, buffer);
                         buffer.flip();
                         if (stream != null) {
                             try {
@@ -219,7 +213,7 @@ public class DramSocket implements Runnable {
             }
         }
 
-        private void send(E data) {
+        public void send(E data) {
             this.vector.add(data);
             synchronized (this) {
                 this.notify();
