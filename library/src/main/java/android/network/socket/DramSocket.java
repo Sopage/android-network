@@ -73,7 +73,7 @@ public class DramSocket implements Runnable {
                         writeRunnable.setOutputStream(socket.getOutputStream());
                         pool.execute(writeRunnable);
                         handle.onStatus(Handle.STATUS_CONNECTED);
-                        read(socket, codec, handle);//阻塞方法
+                        readByBytes(socket, codec, handle);//阻塞方法
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -118,49 +118,155 @@ public class DramSocket implements Runnable {
 
     }
 
-    private static <D, E> void read(Socket socket, Codec<D, E> codec, Handle handle) throws Exception {
-        final ByteBuffer buffer = ByteBuffer.allocate(102400);//解码需要操作的buffer
-        byte[] bytes = new byte[buffer.capacity()];//读取的缓冲区
-        byte[] cache = new byte[buffer.capacity()];//缓存没有被解码的缓冲区
-        byte[] swap = new byte[buffer.capacity()];//用于和缓存缓冲区交换用的缓冲区
-        int cacheLength = 0;//缓存的长度
-        int readLength;//读取到的数据长度
+    private static <D, E> void readByBytes(Socket socket, Codec<D, E> codec, Handle handle) throws Exception {
+        //解码需要操作的buffer
+        final ByteBuffer buffer = ByteBuffer.allocate(102400);
+        //读取的缓冲区
+        byte[] bytes = new byte[buffer.capacity()];
+        //缓存没有被解码的缓冲区
+        byte[] cache = new byte[buffer.capacity()];
+        //用于和缓存缓冲区交换用的缓冲区
+        byte[] swap = new byte[buffer.capacity()];
+        //缓存的长度
+        int cacheLength = 0;
+        //读取到的数据长度
+        int readLength;
         InputStream stream = socket.getInputStream();
         while ((readLength = stream.read(bytes)) > 0) {
             int length;
-            if((length = (cacheLength + readLength)) > cache.length){
+            if ((length = (cacheLength + readLength)) > cache.length) {
                 //缓存区已满，丢弃读取的数据
                 continue;
             }
-            System.arraycopy(bytes, 0, cache, cacheLength, readLength);//把读取到的数据拷贝到上次缓存缓冲区的后面
-            cacheLength = length;//缓存长度=上次的缓存长度+读取的数据长度
-            buffer.clear();//清除重置解码的ByteBuffer
+            //把读取到的数据拷贝到上次缓存缓冲区的后面
+            System.arraycopy(bytes, 0, cache, cacheLength, readLength);
+            //缓存长度=上次的缓存长度+读取的数据长度
+            cacheLength = length;
+            //清除重置解码的ByteBuffer
+            buffer.clear();
+            //把缓存放入buffer中解码
             buffer.put(cache, 0, cacheLength);
-            buffer.flip();//切换到读模式
-            buffer.mark();//先标记当前开始读取的点，用于后面不够解码后reset操作
+            //切换到读模式
+            buffer.flip();
+            //先标记当前开始读取的点，用于后面不够解码后reset操作
+            buffer.mark();
+
+            System.out.println(String.format("cache -> length=%d", cacheLength));
+            System.out.println(String.format("buffer -> position=%d, limit=%d, remaining=%d", buffer.position(), buffer.limit(), buffer.remaining()));
+
             D data;
-            while (buffer.hasRemaining() && ((data = codec.decode(buffer)) != null)) {//判断如果ByteBuffer后面有可读数据并且解码一次
-                handle.onReceive(data);//把解码的数据回调给Handler
-                if (buffer.hasRemaining()) {//再次判断ByteBuffer后面是否还有可读数据
-                    int remaining = buffer.remaining();//ByteBuffer剩余没有读取的数据长度
-                    int position = buffer.position();//ByteBuffer当前读取的位置
-                    System.arraycopy(cache, position, swap, 0, remaining);//拷贝缓存剩余长度的数据到交换缓冲区
-                    System.arraycopy(swap, 0, cache, 0, remaining);//在把交换缓冲区的数据拷贝的缓存缓冲区用于下次解码
-                    cacheLength = remaining;//重置缓存缓冲区长度为剩余数据长度
-                    buffer.clear();//再次清除重置解码的ByteBuffer
+            //判断如果ByteBuffer后面有可读数据并且解码一次
+            while (buffer.hasRemaining() && ((data = codec.decode(buffer)) != null)) {
+                //把解码的数据回调给Handler
+                handle.onReceive(data);
+                //再次判断ByteBuffer后面是否还有可读数据
+                if (buffer.hasRemaining()) {
+                    //ByteBuffer剩余没有读取的数据长度
+                    int remaining = buffer.remaining();
+                    //ByteBuffer当前读取的位置
+                    int position = buffer.position();
+                    //拷贝缓存剩余长度的数据到交换缓冲区
+                    System.arraycopy(cache, position, swap, 0, remaining);
+                    //在把交换缓冲区的数据拷贝的缓存缓冲区用于下次解码
+                    System.arraycopy(swap, 0, cache, 0, remaining);
+                    //重置缓存缓冲区长度为剩余数据长度
+                    cacheLength = remaining;
+                    //再次清除重置解码的ByteBuffer
+                    buffer.clear();
                     buffer.put(cache, 0, cacheLength);
-                    buffer.flip();//切换到读模式
+                    //切换到读模式
+                    buffer.flip();
                 }
-                buffer.mark();//再次标记当前开始读取点
+                //再次标记当前开始读取点
+                buffer.mark();
             }
-            buffer.reset();//上面解码完成后重置到make读取点
-            if (buffer.hasRemaining()) {//判断是否还有数据可读
-                int remaining = buffer.remaining();//剩余可读长度
-                buffer.get(cache, 0, remaining);//将剩余数据拷贝到缓存缓冲区
-                cacheLength = remaining;//缓存数据长度为当前剩余数据长度
+            //上面解码完成后重置到make读取点
+            buffer.reset();
+            //判断是否还有数据可读
+            if (buffer.hasRemaining()) {
+                //剩余可读长度
+                int remaining = buffer.remaining();
+                //将剩余数据拷贝到缓存缓冲区
+                buffer.get(cache, 0, remaining);
+                //缓存数据长度为当前剩余数据长度
+                cacheLength = remaining;
             } else {
-                cacheLength = 0;//如果没有可读的数据 缓存数据长度为0
+                //如果没有可读的数据 缓存数据长度为0
+                cacheLength = 0;
             }
+        }
+    }
+
+    private static <D, E> void readByBuffer(Socket socket, Codec<D, E> codec, Handle handle) throws Exception {
+        //解码需要操作的buffer
+        final ByteBuffer buffer = ByteBuffer.allocate(102400);
+        //缓存没有被解码的缓冲区
+        final ByteBuffer cache = ByteBuffer.allocate(102400);
+        //计算cache buffer数据相关信息
+        cache.flip();
+        //读取的缓冲区
+        byte[] bytes = new byte[buffer.capacity()];
+        //读取到的数据长度
+        int readLength;
+        InputStream stream = socket.getInputStream();
+        String info = "position=%d, limit=%d, remaining=%d, str=%s";
+        while ((readLength = stream.read(bytes)) > 0) {
+            //把position下标设置到最后面用户继续往后拼接数据
+            cache.position(cache.limit());
+            //重置limit的长度为缓存最大长度
+            cache.limit(cache.capacity());
+            cache.put(bytes, 0, readLength);
+            //计算cache buffer数据相关信息
+            cache.flip();
+            //清除重置解码的ByteBuffer
+            buffer.clear();
+            //把缓存重新加入到buffer中进行解码
+            buffer.put(cache.array(), cache.position(), cache.limit());
+            //计算buffer数据相关信息
+            buffer.flip();
+            //先标记当前开始读取的点，用于后面不够解码后reset操作
+            buffer.mark();
+
+            System.out.println("cache -> " + String.format(info, cache.position(), cache.limit(), cache.remaining(), ""));
+            System.out.println("buffer -> " + String.format(info, buffer.position(), buffer.limit(), buffer.remaining(), ""));
+
+            D data;
+            //判断如果ByteBuffer后面有可读数据并且解码一次
+            while (buffer.hasRemaining() && ((data = codec.decode(buffer)) != null)) {
+                //把解码的数据回调给Handler
+                handle.onReceive(data);
+                //再次判断ByteBuffer后面是否还有可读数据
+                if (buffer.hasRemaining()) {
+                    //清除重置cache ByteBuffer
+                    cache.clear();
+                    //把剩余buffer中的数据放置到缓存buffer中
+                    cache.put(buffer.array(), buffer.position(), buffer.remaining());
+                    //再次计算cache buffer数据相关信息
+                    cache.flip();
+                    //再次清除重置解码的ByteBuffer
+                    buffer.clear();
+                    //再次把缓存重新加入到buffer中进行解码
+                    buffer.put(cache.array(), cache.position(), cache.limit());
+                    //计算buffer数据相关信息
+                    buffer.flip();
+                }
+                //再次标记当前开始读取点
+                buffer.mark();
+            }
+            //上面解码完成后重置到make读取点
+            buffer.reset();
+            //判断是否还有数据可读
+            if (buffer.hasRemaining()) {
+                //清除重置cache ByteBuffer
+                cache.clear();
+                //把缓存重新加入到buffer中进行解码
+                cache.put(buffer.array(), buffer.position(), buffer.limit());
+            } else {
+                //清除重置cache ByteBuffer
+                cache.clear();
+            }
+            //计算cache buffer数据相关信息
+            cache.flip();
         }
     }
 
