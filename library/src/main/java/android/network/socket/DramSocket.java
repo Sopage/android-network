@@ -127,8 +127,13 @@ public class DramSocket implements Runnable {
         int readLength;//读取到的数据长度
         InputStream stream = socket.getInputStream();
         while ((readLength = stream.read(bytes)) > 0) {
+            int length;
+            if((length = (cacheLength + readLength)) > cache.length){
+                //缓存区已满，丢弃读取的数据
+                continue;
+            }
             System.arraycopy(bytes, 0, cache, cacheLength, readLength);//把读取到的数据拷贝到上次缓存缓冲区的后面
-            cacheLength += readLength;//缓存长度=上次的缓存长度+读取的数据长度
+            cacheLength = length;//缓存长度=上次的缓存长度+读取的数据长度
             buffer.clear();//清除重置解码的ByteBuffer
             buffer.put(cache, 0, cacheLength);
             buffer.flip();//切换到读模式
