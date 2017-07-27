@@ -24,6 +24,10 @@ public class DramSocket implements Runnable {
     private Handle handle;
     private boolean running;
 
+    public DramSocket(){
+        writeRunnable = new WriteRunnable();
+    }
+
     public void connect(String host, int port) {
         this.address = new InetSocketAddress(host, port);
     }
@@ -35,6 +39,7 @@ public class DramSocket implements Runnable {
     public <D, E> void setCodec(Codec<D, E> codec, Handle<D> handle) {
         this.codec = codec;
         this.handle = handle;
+        writeRunnable.setCodec(this.codec);
     }
 
     public void start() {
@@ -58,14 +63,17 @@ public class DramSocket implements Runnable {
         }
         pool = Executors.newFixedThreadPool(2);
         running = true;
-        writeRunnable = new WriteRunnable(codec);
         pool.execute(this);
+    }
+
+    public boolean isRunning(){
+        return this.running;
     }
 
     @Override
     public void run() {
         synchronized (this) {
-            while (running) {
+            while (isRunning()) {
                 try {
                     socket = new Socket();
                     socket.connect(address);
@@ -73,14 +81,14 @@ public class DramSocket implements Runnable {
                         writeRunnable.setOutputStream(socket.getOutputStream());
                         pool.execute(writeRunnable);
                         handle.onStatus(Handle.STATUS_CONNECTED);
-                        readByBytes(socket, codec, handle);//阻塞方法
+                        readByBuffer(socket, codec, handle);//阻塞方法
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                     try {
                         handle.onStatus(Handle.STATUS_FAIL);
                         socket = null;
-                        if (running) {
+                        if (isRunning()) {
                             this.wait(6000);
                         }
                     } catch (InterruptedException ie) {
@@ -131,8 +139,8 @@ public class DramSocket implements Runnable {
         int cacheLength = 0;
         //读取到的数据长度
         int readLength;
-        InputStream stream = socket.getInputStream();
-        while ((readLength = stream.read(bytes)) > 0) {
+        InputStream in = socket.getInputStream();
+        while ((readLength = in.read(bytes)) > 0) {
             int length;
             if((length = (cacheLength + readLength)) > cache.length){
                 //缓存区已满，丢弃读取的数据
@@ -214,9 +222,9 @@ public class DramSocket implements Runnable {
         byte[] bytes = new byte[buffer.capacity()];
         //读取到的数据长度
         int readLength;
-        InputStream stream = socket.getInputStream();
+        InputStream in = socket.getInputStream();
         String info = "position=%d, limit=%d, remaining=%d, str=%s";
-        while ((readLength = stream.read(bytes)) > 0) {
+        while ((readLength = in.read(bytes)) > 0) {
             //把position下标设置到最后面用户继续往后拼接数据
             if(cache.limit() + readLength > cache.capacity()){
                 //缓存区已满，丢弃读取的数据
@@ -289,16 +297,16 @@ public class DramSocket implements Runnable {
     public static final class WriteRunnable<D, E> implements Runnable {
         private Vector<E> vector = new Vector<>();
         private Codec<D, E> codec;
-        private OutputStream stream;
+        private OutputStream out;
         private boolean sending;
         private ByteBuffer buffer = ByteBuffer.allocate(102400);
 
-        private WriteRunnable(Codec<D, E> codec) {
+        public void setCodec(Codec<D, E> codec){
             this.codec = codec;
         }
 
         private void setOutputStream(OutputStream stream) {
-            this.stream = stream;
+            this.out = stream;
         }
 
         @Override
@@ -319,10 +327,10 @@ public class DramSocket implements Runnable {
                         buffer.clear();
                         codec.encode(data, buffer);
                         buffer.flip();
-                        if (stream != null) {
+                        if (out != null) {
                             try {
-                                stream.write(buffer.array(), 0, buffer.limit());
-                                stream.flush();
+                                out.write(buffer.array(), 0, buffer.limit());
+                                out.flush();
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -334,7 +342,7 @@ public class DramSocket implements Runnable {
 
         private void stop() {
             sending = false;
-            this.stream = null;
+            this.out = null;
             synchronized (this) {
                 this.notify();
             }
