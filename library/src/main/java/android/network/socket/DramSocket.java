@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DramSocket implements Runnable {
-
     private InetSocketAddress address;
     private ExecutorService pool;
     private Socket socket;
@@ -24,7 +23,7 @@ public class DramSocket implements Runnable {
     private Handle handle;
     private boolean running;
 
-    public DramSocket(){
+    public DramSocket() {
         writeRunnable = new WriteRunnable();
     }
 
@@ -66,8 +65,15 @@ public class DramSocket implements Runnable {
         pool.execute(this);
     }
 
-    public boolean isRunning(){
+    private boolean isRunning() {
         return this.running;
+    }
+
+    public boolean isConnected() {
+        if (socket != null && !socket.isClosed() && socket.isConnected() && isRunning()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -142,7 +148,7 @@ public class DramSocket implements Runnable {
         InputStream in = socket.getInputStream();
         while ((readLength = in.read(bytes)) > 0) {
             int length;
-            if((length = (cacheLength + readLength)) > cache.length){
+            if ((length = (cacheLength + readLength)) > cache.length) {
                 //缓存区已满，丢弃读取的数据
                 continue;
             }
@@ -226,7 +232,7 @@ public class DramSocket implements Runnable {
         String info = "position=%d, limit=%d, remaining=%d, str=%s";
         while ((readLength = in.read(bytes)) > 0) {
             //把position下标设置到最后面用户继续往后拼接数据
-            if(cache.limit() + readLength > cache.capacity()){
+            if (cache.limit() + readLength > cache.capacity()) {
                 //缓存区已满，丢弃读取的数据
                 continue;
             }
@@ -301,7 +307,7 @@ public class DramSocket implements Runnable {
         private boolean sending;
         private ByteBuffer buffer = ByteBuffer.allocate(102400);
 
-        public void setCodec(Codec<D, E> codec){
+        public void setCodec(Codec<D, E> codec) {
             this.codec = codec;
         }
 
