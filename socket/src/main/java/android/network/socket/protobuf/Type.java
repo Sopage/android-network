@@ -1,4 +1,4 @@
-package android.network.http.sample.protobuf;
+package android.network.socket.protobuf;
 
 /**
  * 消息类型

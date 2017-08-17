@@ -27,9 +27,7 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-//    compile(name:'test', ext:'aar')
-    compile 'com.android.support:appcompat-v7:+'
-//    compile 'com.github.spacetimeme:dream-socket:1.0.0-SNAPSHOT'
-    compile "com.google.protobuf:protobuf-java:3.3.1"
+    compile project(":socket")
+
 
 }

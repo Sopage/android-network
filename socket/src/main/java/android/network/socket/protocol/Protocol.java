@@ -1,4 +1,4 @@
-package android.network.http.sample.protocol;
+package android.network.socket.protocol;
 
 public class Protocol {
 

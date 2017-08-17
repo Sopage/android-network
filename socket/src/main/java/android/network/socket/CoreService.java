@@ -2,19 +2,20 @@ package android.network.socket;
 
 import android.app.Service;
 import android.content.Intent;
-import android.network.binder.ICallback;
+import android.network.socket.binder.ServiceBinder;
+import android.network.socket.codec.CodecHandle;
 import android.os.IBinder;
-import android.os.RemoteCallbackList;
-import android.os.RemoteException;
+
+import com.dream.socket.DreamSocket;
 
 /**
  * @author Mr.Huang
  * @date 2017/8/16
  */
-
 public class CoreService extends Service {
 
     private ServiceBinder binder = new ServiceBinder();
+    private DreamSocket socket;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -26,28 +27,22 @@ public class CoreService extends Service {
         return START_STICKY;
     }
 
-    private static final class ServiceBinder extends android.network.binder.IBinder.Stub {
+    @Override
+    public void onCreate() {
+        socket = new DreamSocket();
+        CodecHandle ch = new CodecHandle();
+        ch.setBinder(binder);
+        ch.setSocket(socket);
+        binder.setSocket(socket);
+        socket.setAddress("192.168.31.43", 6969);
+        socket.setCodec(ch);
+        socket.setHandle(ch);
+    }
 
-        private final RemoteCallbackList<ICallback> callbackList = new RemoteCallbackList<>();
-
-        @Override
-        public void register(ICallback cb) throws RemoteException {
-            callbackList.register(cb);
-        }
-
-        @Override
-        public void unregister(ICallback cb) throws RemoteException {
-            callbackList.unregister(cb);
-        }
-
-        @Override
-        public void login(int uid, String token) throws RemoteException {
-
-        }
-
-        @Override
-        public void logout() throws RemoteException {
-
+    @Override
+    public void onDestroy() {
+        if (socket != null && socket.isConnected()) {
+            socket.stop();
         }
     }
 }
