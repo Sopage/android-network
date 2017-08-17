@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="android.network.socket">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+
+        <service
+            android:name="android.network.socket.CoreService"
+            android:exported="false"
+            android:process=":core">
+            <intent-filter>
+                <action android:name="android.network.socket.CoreService" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>
