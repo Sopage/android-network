@@ -10,6 +10,7 @@ import android.network.binder.RemoteBinderInvoke;
 import android.network.remote.ConnectService;
 import android.network.remote.binder.IRemoteBinder;
 import android.os.IBinder;
+import android.util.Log;
 
 /**
  * @author Mr.Huang
@@ -45,11 +46,13 @@ public class DataService extends Service implements ServiceConnection {
         if (RemoteBinderInvoke.register(remote, cb)) {
             binder.setRemoteBinder(remote);
         }
+        Log.e("ESA", "DataService onServiceConnected");
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         RemoteBinderInvoke.unregister(remote, cb);
+        Log.e("ESA", "DataService onServiceDisconnected");
         remote = null;
     }
 

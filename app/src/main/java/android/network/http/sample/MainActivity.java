@@ -10,14 +10,19 @@ import android.network.binder.DataBinder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 
 public class MainActivity extends Activity {
+
+    private ServiceConnection connection;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent service = new Intent(this, DataService.class);
-        bindService(service, new ServiceConnection() {
+        startService(service);
+        bindService(service, connection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 DataBinder binder = (DataBinder) service;
@@ -26,8 +31,15 @@ public class MainActivity extends Activity {
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
+                Log.e("ESA", "-----------onServiceDisconnected-------------");
 
             }
         }, Service.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(connection);
     }
 }
