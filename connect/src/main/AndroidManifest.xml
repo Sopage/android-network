@@ -1,0 +1,26 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="android.network.socket">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+
+        <service
+            android:name="android.network.remote.ConnectService"
+            android:exported="false"
+            android:process=":connect">
+            <intent-filter>
+                <action android:name="android.network.remote.ConnectService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name="android.network.DataService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.network.DataService" />
+            </intent-filter>
+        </service>
+
+    </application>
+
+</manifest>
