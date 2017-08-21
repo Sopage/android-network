@@ -1,45 +1,28 @@
 package android.network.http.sample;
 
 import android.app.Activity;
-import android.app.Service;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
-import android.network.DataService;
-import android.network.binder.DataBinder;
+import android.network.sdk.DreamManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.view.View;
 
 
 public class MainActivity extends Activity {
 
-    private ServiceConnection connection;
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent service = new Intent(this, DataService.class);
-        startService(service);
-        bindService(service, connection = new ServiceConnection() {
+        setContentView(R.layout.activity_main);
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                DataBinder binder = (DataBinder) service;
-                binder.login(100, "token");
+            public void onClick(View v) {
+                DreamManager.getSender().login(101, "200");
             }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                Log.e("ESA", "-----------onServiceDisconnected-------------");
-
-            }
-        }, Service.BIND_AUTO_CREATE);
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unbindService(connection);
     }
 }

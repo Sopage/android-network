@@ -17,6 +17,7 @@ import java.util.List;
  */
 public abstract class AbstractBinder extends Binder {
 
+    private static final int LOOP_TIME = 100;
     private HandlerThread ht = new HandlerThread("binder loop");
     private List<OnStatusListener> statusListeners = new ArrayList<>();
     private List<OnMessageListener> messageListeners = new ArrayList<>();
@@ -71,12 +72,12 @@ public abstract class AbstractBinder extends Binder {
             @Override
             public void run() {
                 if (remote == null) {
-                    handler.postDelayed(this, 100);
+                    handler.postDelayed(this, LOOP_TIME);
                 } else {
                     RemoteBinderInvoke.start(remote);
                 }
             }
-        }, 100);
+        }, LOOP_TIME);
     }
 
     protected void handlerInvokeSend(final byte[] array) {
@@ -88,11 +89,11 @@ public abstract class AbstractBinder extends Binder {
             @Override
             public void run() {
                 if (remote == null) {
-                    handler.postDelayed(this, 100);
+                    handler.postDelayed(this, LOOP_TIME);
                 } else {
                     RemoteBinderInvoke.send(remote, array);
                 }
             }
-        }, 100);
+        }, LOOP_TIME);
     }
 }
