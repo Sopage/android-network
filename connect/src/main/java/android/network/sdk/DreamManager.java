@@ -17,21 +17,18 @@ public class DreamManager {
     private static MessageSender sender;
 
     public static void register(Application application) {
+        connect = new DataServiceConnect();
+        sender = new MessageSender(connect);
+        receiver = new MessageReceiver(connect);
         Intent service = new Intent(application, DataService.class);
         application.startService(service);
-        connect = new DataServiceConnect();
         application.bindService(service, connect, Service.BIND_AUTO_CREATE);
-        receiver = new MessageReceiver(connect);
-        sender = new MessageSender(connect);
     }
 
     public static void unregister(Application application){
         if(connect != null){
             application.unbindService(connect);
         }
-        connect = null;
-        receiver = null;
-        sender = null;
     }
 
     public static MessageSender getSender() {

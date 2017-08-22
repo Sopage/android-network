@@ -31,24 +31,28 @@ public class RemoteBinderInvoke {
         return false;
     }
 
-    public static void start(IRemoteBinder remote) {
+    public static boolean start(IRemoteBinder remote) {
         if (remote != null) {
             try {
                 remote.start();
+                return true;
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
-    public static void stop(IRemoteBinder remote) {
+    public static boolean stop(IRemoteBinder remote) {
         if (remote != null) {
             try {
                 remote.stop();
+                return true;
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
     public static boolean send(IRemoteBinder remote, byte[] data) {
