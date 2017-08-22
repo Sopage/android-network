@@ -1,4 +1,4 @@
-package android.network;
+package android.network.local;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -6,11 +6,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.network.binder.CallbackBinder;
 import android.network.binder.DataBinder;
-import android.network.binder.RemoteBinderInvoke;
-import android.network.remote.ConnectService;
+import android.network.invoke.RemoteBinderInvoke;
+import android.network.remote.RemoteService;
 import android.network.remote.binder.IRemoteBinder;
 import android.os.IBinder;
-import android.util.Log;
 
 /**
  * @author Mr.Huang
@@ -30,7 +29,7 @@ public class DataService extends Service implements ServiceConnection {
     @Override
     public void onCreate() {
         super.onCreate();
-        Intent service = new Intent(this, ConnectService.class);
+        Intent service = new Intent(this, RemoteService.class);
         bindService(service, this, Service.BIND_AUTO_CREATE);
     }
 
@@ -46,13 +45,11 @@ public class DataService extends Service implements ServiceConnection {
         if (RemoteBinderInvoke.register(remote, cb)) {
             binder.setRemoteBinder(remote);
         }
-        Log.e("ESA", "DataService onServiceConnected");
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         RemoteBinderInvoke.unregister(remote, cb);
-        Log.e("ESA", "DataService onServiceDisconnected");
         remote = null;
     }
 

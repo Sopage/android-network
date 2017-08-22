@@ -20,19 +20,19 @@ public class DataBinder extends AbstractBinder implements IDataBinder, OnStatusL
         addOnStatusListener(this);
         this.uid = uid;
         this.token = token;
-        handlerInvokeStart();
+        loopInvokeStart();
     }
 
     @Override
     public void logout() {
-        handlerInvokeSend(BuildPacket.buildLogout(1).getBody());
+        loopInvokeSend(BuildPacket.buildLogout(1).getBody());
     }
 
     @Override
     public void onStatus(int status) {
         switch (status) {
             case Status.CONNECTED:
-                handlerInvokeSend(BuildPacket.buildLogin(uid, token).getBody());
+                loopInvokeSend(BuildPacket.buildLogin(uid, token).getBody());
                 break;
         }
     }

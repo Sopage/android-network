@@ -1,4 +1,4 @@
-package android.network.sdk.connect;
+package android.network.local.connect;
 
 import android.content.ComponentName;
 import android.content.ServiceConnection;
@@ -41,11 +41,11 @@ public class DataServiceConnect implements ServiceConnection {
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        binder = null;
         Iterator<OnConnectedListener> iterator = connectedListeners.iterator();
         while (iterator.hasNext()) {
             iterator.next().onDisconnect();
         }
+        binder = null;
     }
 
     public DataBinder getBinder() {

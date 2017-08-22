@@ -2,7 +2,7 @@ package android.network.remote.codec;
 
 import android.network.protocol.Packet;
 import android.network.protocol.Protocol;
-import android.network.remote.binder.ServiceBinder;
+import android.network.remote.binder.RemoteBinder;
 
 import com.dream.socket.DreamSocket;
 import com.dream.socket.codec.Codec;
@@ -19,13 +19,13 @@ import java.nio.ByteBuffer;
 public class CodecHandle extends Codec<Packet, Packet> implements Handle<Packet>, Decode<Packet>, Encode<Packet> {
 
     private DreamSocket socket;
-    private ServiceBinder binder;
+    private RemoteBinder binder;
 
     public void setSocket(DreamSocket socket) {
         this.socket = socket;
     }
 
-    public void setBinder(ServiceBinder binder) {
+    public void setBinder(RemoteBinder binder) {
         this.binder = binder;
     }
 

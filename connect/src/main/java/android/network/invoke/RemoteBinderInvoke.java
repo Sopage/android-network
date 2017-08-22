@@ -1,6 +1,8 @@
-package android.network.binder;
+package android.network.invoke;
 
+import android.network.binder.ICallback;
 import android.network.remote.binder.IRemoteBinder;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
 /**
@@ -64,6 +66,30 @@ public class RemoteBinderInvoke {
             }
         }
         return false;
+    }
+
+    public static void onStatusCallback(RemoteCallbackList<ICallback> callbackList, int status) {
+        int n = callbackList.beginBroadcast();
+        for (int i = 0; i < n; i++) {
+            try {
+                callbackList.getBroadcastItem(i).onStatus(status);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        callbackList.finishBroadcast();
+    }
+
+    public static void onMessageCallback(RemoteCallbackList<ICallback> callbackList,byte[] body) {
+        int n = callbackList.beginBroadcast();
+        for (int i = 0; i < n; i++) {
+            try {
+                callbackList.getBroadcastItem(i).onMessage(body);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
+        callbackList.finishBroadcast();
     }
 
 }

@@ -1,5 +1,7 @@
 package android.network.binder;
 
+import android.network.invoke.LoopInvoke;
+import android.network.invoke.RemoteBinderInvoke;
 import android.network.listener.OnMessageListener;
 import android.network.listener.OnStatusListener;
 import android.network.remote.binder.IRemoteBinder;
@@ -17,7 +19,6 @@ import java.util.List;
  */
 public abstract class AbstractBinder extends Binder {
 
-    private static final int LOOP_TIME = 100;
     private HandlerThread ht = new HandlerThread("binder loop");
     private List<OnStatusListener> statusListeners = new ArrayList<>();
     private List<OnMessageListener> messageListeners = new ArrayList<>();
@@ -33,67 +34,84 @@ public abstract class AbstractBinder extends Binder {
         this.remote = remote;
     }
 
-    public void addOnStatusListener(OnStatusListener listener){
+    public void addOnStatusListener(OnStatusListener listener) {
         statusListeners.add(listener);
     }
 
-    public void removeOnStatusListener(OnStatusListener listener){
+    public void removeOnStatusListener(OnStatusListener listener) {
         statusListeners.remove(listener);
     }
 
-    public void addOnMessageListener(OnMessageListener listener){
+    public void addOnMessageListener(OnMessageListener listener) {
         messageListeners.add(listener);
     }
 
-    public void removeOnMessageListener(OnMessageListener listener){
+    public void removeOnMessageListener(OnMessageListener listener) {
         messageListeners.remove(listener);
     }
 
-    protected void handlerStatus(int status){
+    protected void handlerStatus(int status) {
         Iterator<OnStatusListener> iterator = statusListeners.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             iterator.next().onStatus(status);
         }
     }
 
-    protected void handlerMessage(byte[] array){
+    protected void handlerMessage(byte[] array) {
         Iterator<OnMessageListener> iterator = messageListeners.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             iterator.next().onMessage(array);
         }
     }
 
-    protected void handlerInvokeStart() {
+    protected void loopInvokeStart() {
         if (remote != null) {
             RemoteBinderInvoke.start(remote);
-            return;
-        }
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (remote == null) {
-                    handler.postDelayed(this, LOOP_TIME);
-                } else {
-                    RemoteBinderInvoke.start(remote);
+        } else {
+            new LoopInvoke(handler) {
+                @Override
+                protected boolean invoke() {
+                    if (remote != null) {
+                        RemoteBinderInvoke.start(remote);
+                        return true;
+                    }
+                    return true;
                 }
-            }
-        }, LOOP_TIME);
+            }.start();
+        }
     }
 
-    protected void handlerInvokeSend(final byte[] array) {
+    protected void loopInvokeStop() {
+        if (remote != null) {
+            RemoteBinderInvoke.stop(remote);
+        } else {
+            new LoopInvoke(handler) {
+                @Override
+                protected boolean invoke() {
+                    if (remote != null) {
+                        RemoteBinderInvoke.stop(remote);
+                        return true;
+                    }
+                    return true;
+                }
+            }.start();
+        }
+    }
+
+    protected void loopInvokeSend(final byte[] array) {
         if (remote != null) {
             RemoteBinderInvoke.send(remote, array);
-            return;
-        }
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (remote == null) {
-                    handler.postDelayed(this, LOOP_TIME);
-                } else {
-                    RemoteBinderInvoke.send(remote, array);
+        } else {
+            new LoopInvoke(handler) {
+                @Override
+                protected boolean invoke() {
+                    if (remote != null) {
+                        RemoteBinderInvoke.send(remote, array);
+                        return true;
+                    }
+                    return true;
                 }
-            }
-        }, LOOP_TIME);
+            }.start();
+        }
     }
 }

@@ -2,7 +2,8 @@ package android.network.sdk;
 
 import android.network.binder.DataBinder;
 import android.network.listener.OnConnectedListener;
-import android.network.sdk.connect.DataServiceConnect;
+import android.network.listener.OnMessageListener;
+import android.network.local.connect.DataServiceConnect;
 
 /**
  * @author Mr.Huang
@@ -16,6 +17,10 @@ public class MessageReceiver implements OnConnectedListener{
     public MessageReceiver(DataServiceConnect connect) {
         this.connect = connect;
         this.connect.addOnConnectedListener(this);
+    }
+
+    public void addOnMessageListener(OnMessageListener listener){
+        connect.getBinder().addOnMessageListener(listener);
     }
 
     @Override

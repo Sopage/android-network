@@ -1,6 +1,7 @@
 package android.network.remote.binder;
 
 import android.network.binder.ICallback;
+import android.network.invoke.RemoteBinderInvoke;
 import android.network.protocol.Packet;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -11,7 +12,7 @@ import com.dream.socket.DreamSocket;
  * @author Mr.Huang
  * @date 2017/8/17
  */
-public class ServiceBinder extends IRemoteBinder.Stub {
+public class RemoteBinder extends IRemoteBinder.Stub {
 
     private final RemoteCallbackList<ICallback> callbackList = new RemoteCallbackList<>();
     private DreamSocket socket;
@@ -59,27 +60,11 @@ public class ServiceBinder extends IRemoteBinder.Stub {
     }
 
     public void onStatusCallback(int status) {
-        int n = callbackList.beginBroadcast();
-        for (int i = 0; i < n; i++) {
-            try {
-                callbackList.getBroadcastItem(i).onStatus(status);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-        callbackList.finishBroadcast();
+        RemoteBinderInvoke.onStatusCallback(callbackList, status);
     }
 
     public void onMessageCallback(byte[] body) {
-        int n = callbackList.beginBroadcast();
-        for (int i = 0; i < n; i++) {
-            try {
-                callbackList.getBroadcastItem(i).onMessage(body);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-        callbackList.finishBroadcast();
+        RemoteBinderInvoke.onMessageCallback(callbackList, body);
     }
 
 }

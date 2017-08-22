@@ -2,7 +2,7 @@ package android.network.sdk;
 
 import android.network.binder.DataBinder;
 import android.network.listener.OnConnectedListener;
-import android.network.sdk.connect.DataServiceConnect;
+import android.network.local.connect.DataServiceConnect;
 
 /**
  * @author Mr.Huang

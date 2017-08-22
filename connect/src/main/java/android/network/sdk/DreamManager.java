@@ -3,8 +3,9 @@ package android.network.sdk;
 import android.app.Application;
 import android.app.Service;
 import android.content.Intent;
-import android.network.DataService;
-import android.network.sdk.connect.DataServiceConnect;
+import android.network.local.DataService;
+import android.network.local.LocalService;
+import android.network.local.connect.DataServiceConnect;
 
 /**
  * @author Mr.Huang
@@ -17,12 +18,16 @@ public class DreamManager {
     private static MessageSender sender;
 
     public static void register(Application application) {
+        Intent ls = new Intent(application, LocalService.class);
+        application.startService(ls);
+
         connect = new DataServiceConnect();
         sender = new MessageSender(connect);
         receiver = new MessageReceiver(connect);
-        Intent service = new Intent(application, DataService.class);
-        application.startService(service);
-        application.bindService(service, connect, Service.BIND_AUTO_CREATE);
+
+        Intent ds = new Intent(application, DataService.class);
+        application.startService(ds);
+        application.bindService(ds, connect, Service.BIND_AUTO_CREATE);
     }
 
     public static void unregister(Application application){
