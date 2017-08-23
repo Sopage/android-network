@@ -1,5 +1,6 @@
-package android.network.binder;
+package android.network.local.binder;
 
+import android.network.binder.remote.IRemoteCallback;
 import android.network.model.Status;
 import android.os.RemoteException;
 
@@ -9,18 +10,18 @@ import com.dream.socket.codec.Handle;
  * @author Mr.Huang
  * @date 2017/8/21
  */
-public class CallbackBinder extends ICallback.Stub {
+public class RemoteCallbackBinder extends IRemoteCallback.Stub {
 
-    private AbstractBinder binder;
+    private RemoteCallback callback;
 
-    public CallbackBinder(AbstractBinder binder) {
-        this.binder = binder;
+    public RemoteCallbackBinder(RemoteCallback callback) {
+        this.callback = callback;
     }
 
     @Override
     public void onMessage(byte[] body) throws RemoteException {
-        if(binder != null && body != null){
-            binder.handlerMessage(body);
+        if(callback != null && body != null){
+            callback.onMessage(body);
         }
     }
 
@@ -32,7 +33,7 @@ public class CallbackBinder extends ICallback.Stub {
                 s = Status.CONNECTED;
                 break;
             case Handle.STATUS_DISCONNECT:
-                s = Status.DISCONNEDT;
+                s = Status.DISCONNECTED;
                 break;
             case Handle.STATUS_FAIL:
                 s = Status.FAIL;
@@ -41,8 +42,13 @@ public class CallbackBinder extends ICallback.Stub {
                 s = Status.FAIL;
                 break;
         }
-        if(binder != null){
-            binder.handlerStatus(s);
+        if(callback != null){
+            callback.onStatus(s);
         }
+    }
+
+    public interface RemoteCallback{
+        void onStatus(int status);
+        void onMessage(byte[] body);
     }
 }

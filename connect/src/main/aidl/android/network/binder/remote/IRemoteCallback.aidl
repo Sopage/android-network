@@ -1,6 +1,6 @@
-package android.network.binder;
+package android.network.binder.remote;
 
-interface ICallback {
+interface IRemoteCallback {
 
     void onMessage(inout byte[] body);
 

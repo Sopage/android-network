@@ -10,6 +10,6 @@ public interface Status {
 
     byte CONNECTED = 0;
 
-    byte DISCONNEDT = 1;
+    byte DISCONNECTED = 1;
 
 }

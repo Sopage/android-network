@@ -3,9 +3,8 @@ package android.network.sdk;
 import android.app.Application;
 import android.app.Service;
 import android.content.Intent;
-import android.network.local.DataService;
 import android.network.local.LocalService;
-import android.network.local.connect.DataServiceConnect;
+import android.network.local.LocalServiceConnection;
 
 /**
  * @author Mr.Huang
@@ -13,34 +12,30 @@ import android.network.local.connect.DataServiceConnect;
  */
 public class DreamManager {
 
-    private static DataServiceConnect connect;
-    private static MessageReceiver receiver;
-    private static MessageSender sender;
+    private static LocalServiceConnection connection = new LocalServiceConnection();
+    private static ReceiverManager receiver;
+    private static SenderManager sender;
 
     public static void register(Application application) {
-        Intent ls = new Intent(application, LocalService.class);
-        application.startService(ls);
+        sender = new SenderManager(connection);
+        receiver = new ReceiverManager(connection);
 
-        connect = new DataServiceConnect();
-        sender = new MessageSender(connect);
-        receiver = new MessageReceiver(connect);
-
-        Intent ds = new Intent(application, DataService.class);
+        Intent ds = new Intent(application, LocalService.class);
         application.startService(ds);
-        application.bindService(ds, connect, Service.BIND_AUTO_CREATE);
+        application.bindService(ds, connection, Service.BIND_AUTO_CREATE);
     }
 
-    public static void unregister(Application application){
-        if(connect != null){
-            application.unbindService(connect);
+    public static void unregister(Application application) {
+        if(connection != null){
+            application.unbindService(connection);
         }
     }
 
-    public static MessageSender getSender() {
+    public static SenderManager getSender() {
         return sender;
     }
 
-    public static MessageReceiver getReceiver() {
+    public static ReceiverManager getReceiver() {
         return receiver;
     }
 }

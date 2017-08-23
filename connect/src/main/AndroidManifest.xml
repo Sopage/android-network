@@ -7,28 +7,12 @@
         <service
             android:name="android.network.remote.RemoteService"
             android:exported="false"
-            android:process=":remote">
-            <intent-filter>
-                <action android:name="android.network.remote.RemoteService" />
-            </intent-filter>
-        </service>
+            android:process=":remote" />
 
         <service
             android:name="android.network.local.LocalService"
             android:exported="false"
-            android:process=":local">
-            <intent-filter>
-                <action android:name="android.network.local.LocalService" />
-            </intent-filter>
-        </service>
-
-        <service
-            android:name="android.network.local.DataService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.network.DataService" />
-            </intent-filter>
-        </service>
+            android:process=":local" />
 
     </application>
 

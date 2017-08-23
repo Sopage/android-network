@@ -4,7 +4,6 @@ import android.network.protocol.Packet;
 import android.network.protocol.Protocol;
 import android.network.remote.binder.RemoteBinder;
 
-import com.dream.socket.DreamSocket;
 import com.dream.socket.codec.Codec;
 import com.dream.socket.codec.Decode;
 import com.dream.socket.codec.Encode;
@@ -16,18 +15,7 @@ import java.nio.ByteBuffer;
  * @author Mr.Huang
  * @date 2017/8/17
  */
-public class CodecHandle extends Codec<Packet, Packet> implements Handle<Packet>, Decode<Packet>, Encode<Packet> {
-
-    private DreamSocket socket;
-    private RemoteBinder binder;
-
-    public void setSocket(DreamSocket socket) {
-        this.socket = socket;
-    }
-
-    public void setBinder(RemoteBinder binder) {
-        this.binder = binder;
-    }
+public class DataCodec extends Codec<Packet, Packet> implements Decode<Packet>, Encode<Packet> {
 
     @Override
     public Decode<Packet> getDecode() {
@@ -37,20 +25,6 @@ public class CodecHandle extends Codec<Packet, Packet> implements Handle<Packet>
     @Override
     public Encode<Packet> getEncode() {
         return this;
-    }
-
-    @Override
-    public void onStatus(int status) {
-        if (binder != null) {
-            binder.onStatusCallback(status);
-        }
-    }
-
-    @Override
-    public void onMessage(Packet data) {
-        if (binder != null) {
-            binder.onMessageCallback(data.getBody());
-        }
     }
 
     @Override

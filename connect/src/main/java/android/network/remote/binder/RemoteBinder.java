@@ -1,12 +1,10 @@
 package android.network.remote.binder;
 
-import android.network.binder.ICallback;
+import android.network.binder.remote.IRemoteCallback;
+import android.network.binder.remote.IRemoteBinder;
 import android.network.invoke.RemoteBinderInvoke;
-import android.network.protocol.Packet;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-
-import com.dream.socket.DreamSocket;
 
 /**
  * @author Mr.Huang
@@ -14,47 +12,43 @@ import com.dream.socket.DreamSocket;
  */
 public class RemoteBinder extends IRemoteBinder.Stub {
 
-    private final RemoteCallbackList<ICallback> callbackList = new RemoteCallbackList<>();
-    private DreamSocket socket;
+    private final RemoteCallbackList<IRemoteCallback> callbackList = new RemoteCallbackList<>();
+    private OnRemoteMethodInvokeCallback callback;
 
-    public void setSocket(DreamSocket socket) {
-        this.socket = socket;
+    public void setOnRemoteMethodInvokeCallback(OnRemoteMethodInvokeCallback callback) {
+        this.callback = callback;
     }
 
     @Override
-    public boolean register(ICallback cb) throws RemoteException {
+    public boolean register(IRemoteCallback cb) throws RemoteException {
         callbackList.register(cb);
         return true;
     }
 
     @Override
-    public boolean unregister(ICallback cb) throws RemoteException {
+    public boolean unregister(IRemoteCallback cb) throws RemoteException {
         callbackList.unregister(cb);
         return true;
     }
 
     @Override
     public void start() throws RemoteException {
-        if (socket != null) {
-            if (socket.isConnected()) {
-                socket.stop();
-            }
-            socket.start();
+        if (callback != null) {
+            callback.start();
         }
     }
 
     @Override
     public void stop() throws RemoteException {
-        if (socket != null) {
-            socket.stop();
+        if (callback != null) {
+            callback.stop();
         }
     }
 
     @Override
     public boolean send(byte[] array) throws RemoteException {
-        if (socket.isConnected()) {
-            socket.send(new Packet(array));
-            return true;
+        if (callback != null) {
+            return callback.send(array);
         }
         return false;
     }
@@ -65,6 +59,14 @@ public class RemoteBinder extends IRemoteBinder.Stub {
 
     public void onMessageCallback(byte[] body) {
         RemoteBinderInvoke.onMessageCallback(callbackList, body);
+    }
+
+    public interface OnRemoteMethodInvokeCallback {
+        void start();
+
+        void stop();
+
+        boolean send(byte[] array);
     }
 
 }
