@@ -9,7 +9,6 @@ import android.network.local.LocalServiceConnection;
  */
 public class SenderManager extends LocalBinderInvoke {
 
-
     public SenderManager(LocalServiceConnection connection) {
         super(connection);
     }

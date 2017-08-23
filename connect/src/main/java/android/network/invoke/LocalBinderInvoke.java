@@ -1,7 +1,6 @@
 package android.network.invoke;
 
 import android.network.local.LocalServiceConnection;
-import android.os.RemoteException;
 
 /**
  * @author Mr.Huang
@@ -18,7 +17,7 @@ public abstract class LocalBinderInvoke {
     public void invokeLogin(int uid, String token) {
         try {
             connection.getBinder().login(uid, token);
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
