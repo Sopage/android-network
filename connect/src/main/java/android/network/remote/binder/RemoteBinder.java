@@ -1,7 +1,7 @@
 package android.network.remote.binder;
 
-import android.network.binder.remote.IRemoteCallback;
 import android.network.binder.remote.IRemoteBinder;
+import android.network.binder.remote.IRemoteCallback;
 import android.network.invoke.RemoteBinderInvoke;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -21,14 +21,12 @@ public class RemoteBinder extends IRemoteBinder.Stub {
 
     @Override
     public boolean register(IRemoteCallback cb) throws RemoteException {
-        callbackList.register(cb);
-        return true;
+        return callbackList.register(cb);
     }
 
     @Override
     public boolean unregister(IRemoteCallback cb) throws RemoteException {
-        callbackList.unregister(cb);
-        return true;
+        return callbackList.unregister(cb);
     }
 
     @Override

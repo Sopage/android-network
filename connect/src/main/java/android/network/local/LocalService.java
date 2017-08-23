@@ -66,6 +66,6 @@ public class LocalService extends Service implements ServiceConnection, RemoteCa
 
     @Override
     public void onMessage(byte[] body) {
-
+        local.onMessage(body);
     }
 }

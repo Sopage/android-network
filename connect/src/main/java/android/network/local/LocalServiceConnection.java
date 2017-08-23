@@ -12,15 +12,25 @@ import android.os.IBinder;
 public class LocalServiceConnection implements ServiceConnection {
 
     private ILocalBinder binder;
+    private LocalCallback cb = new LocalCallback();
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         binder = ILocalBinder.Stub.asInterface(service);
+        try {
+            binder.register(cb);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         binder = null;
+    }
+
+    public LocalCallback getLocalCallback() {
+        return cb;
     }
 
     public synchronized ILocalBinder getBinder() {

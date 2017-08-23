@@ -13,8 +13,4 @@ public class SenderManager extends LocalBinderInvoke {
         super(connection);
     }
 
-    public void login(int uid, String token) {
-        invokeLogin(uid, token);
-    }
-
 }

@@ -1,7 +1,9 @@
 package android.network.http.sample;
 
 import android.app.Activity;
+import android.network.listener.OnReceiverMessage;
 import android.network.protocol.protobuf.BodyType;
+import android.network.protocol.protobuf.MessageType;
 import android.network.protocol.protobuf.Protobuf;
 import android.network.sdk.DreamManager;
 import android.os.Bundle;
@@ -16,7 +18,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 
 public class MainActivity extends Activity {
 
-
+    public int index = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,10 +31,23 @@ public class MainActivity extends Activity {
                 btn.setText((String)msg.obj);
             }
         };
+        DreamManager.getReceiver().addOnReceiverMessage(new OnReceiverMessage() {
+            @Override
+            public void onMessage(int sender, int type, String text) {
+                handler.obtainMessage(1, text).sendToTarget();
+            }
+        });
         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 DreamManager.getSender().login(101, "token");
+            }
+        });
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DreamManager.getSender().sendText(1, 1, "message -> " + index);
+                index ++;
             }
         });
     }
