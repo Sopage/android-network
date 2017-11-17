@@ -30,13 +30,13 @@ public class UploadActivity extends Activity implements View.OnClickListener{
             public void run() {
                 try {
                     Map<String, String> params = new HashMap<>();
-                    params.put("a", "a");
-                    params.put("b", "b");
-                    params.put("c", "c");
+                    params.put("参数1", "参数值1");
+                    params.put("参数2", "参数值2");
+                    params.put("参数3", "参数值3");
                     File file = new File("/mnt/sdcard/image.jpg");
                     Map<String, File[]> fileMap = new HashMap<>();
                     fileMap.put("file", new File[]{file});
-                    String s = Http.upload("http://192.168.31.43:8080/upload", params, fileMap);
+                    String s = Http.get("http://10.0.2.2:8080/get", null, params);
                     Log.e("ESA", s);
                 } catch (Exception e) {
                     e.printStackTrace();

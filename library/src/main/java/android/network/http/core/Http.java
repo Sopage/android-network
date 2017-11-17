@@ -34,7 +34,7 @@ public class Http {
     private static HostnameVerifier hostnameVerifier;
 
     private static void addHeaders(HttpURLConnection conn, Map<String, String> headers) {
-        if(headers == null || headers.size() == 0){
+        if (headers == null || headers.size() == 0) {
             return;
         }
         for (Map.Entry<String, String> entry : headers.entrySet()) {
@@ -52,38 +52,7 @@ public class Http {
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Accept-Charset", "UTF-8");
-        String cookie = cookieCache.get(host);
-        if (cookie != null) {
-            conn.setRequestProperty("Cookie", cookie);
-        }
-        addHeaders(conn, headers);
-        int responseCode = conn.getResponseCode();
-        StringBuffer body = null;
-        if (responseCode == 200) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            body = new StringBuffer();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                body.append(line);
-            }
-            reader.close();
-        }
-        cookie = conn.getHeaderField("Set-Cookie");
-        if (cookie != null) {
-            cookieCache.put(host, cookie);
-        }
-        conn.disconnect();
-        return body != null ? body.toString() : null;
-    }
-
-    public static String get(String url, Map<String, String> headers) throws IOException {
-        URL _url = new URL(URLFormat.getFormatUrl(url, null));
-        String host = _url.getHost();
-        HttpURLConnection conn = getHttpURLConnection(_url);
-        conn.setConnectTimeout(3000);
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
@@ -117,6 +86,7 @@ public class Http {
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
@@ -125,43 +95,80 @@ public class Http {
         addHeaders(conn, headers);
         conn.setDoInput(true);
         conn.setDoOutput(true);
-        StringBuilder sb = new StringBuilder();
+        StringBuilder body = new StringBuilder();
         if (params != null && params.size() > 0) {
             boolean isAppendAt = false;
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 if (isAppendAt) {
-                    sb.append("&");
+                    body.append("&");
                 }
-                sb.append(entry.getKey()).append("=").append(urlEncode(entry.getValue()));
+                body.append(entry.getKey()).append("=").append(urlEncode(entry.getValue()));
                 isAppendAt = true;
             }
         }
         OutputStream out = conn.getOutputStream();
-        out.write(sb.toString().getBytes("UTF-8"));
+        out.write(body.toString().getBytes("UTF-8"));
         out.flush();
         out.close();
-        sb.delete(0, sb.length());
+        body.delete(0, body.length());
         int responseCode = conn.getResponseCode();
         if (responseCode == 200) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
-                sb.append(line);
+                body.append(line);
             }
             reader.close();
         } else {
-            sb = null;
+            body = null;
         }
         cookie = conn.getHeaderField("Set-Cookie");
         if (cookie != null) {
             cookieCache.put(host, cookie);
         }
         conn.disconnect();
-        return sb != null ? sb.toString() : null;
+        return body != null ? body.toString() : null;
     }
 
-    private static void progress(int contentLength, int writeLength) {
-        Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
+    public static String post(String url, Map<String, String> headers, String json) throws IOException {
+        URL _url = new URL(URLFormat.getFormatUrl(url, null));
+        String host = _url.getHost();
+        HttpURLConnection conn = getHttpURLConnection(_url);
+        conn.setConnectTimeout(3000);
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Charsert", "UTF-8");
+        conn.setRequestProperty("Accept-Charset", "UTF-8");
+        String cookie = cookieCache.get(host);
+        if (cookie != null) {
+            conn.setRequestProperty("Cookie", cookie);
+        }
+        addHeaders(conn, headers);
+        conn.setDoInput(true);
+        conn.setDoOutput(true);
+        OutputStream out = conn.getOutputStream();
+        out.write(json.getBytes("UTF-8"));
+        out.flush();
+        out.close();
+        StringBuilder body = new StringBuilder();
+        int responseCode = conn.getResponseCode();
+        if (responseCode == 200) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                body.append(line);
+            }
+            reader.close();
+        } else {
+            body = null;
+        }
+        cookie = conn.getHeaderField("Set-Cookie");
+        if (cookie != null) {
+            cookieCache.put(host, cookie);
+        }
+        conn.disconnect();
+        return body != null ? body.toString() : null;
     }
 
     /**
@@ -171,16 +178,17 @@ public class Http {
      * or setChunkedStreamingMode(int) when it is not.
      * Otherwise HttpURLConnection will be forced to buffer the complete request body in memory before it is transmitted,
      * wasting (and possibly exhausting) heap and increasing latency.
-     * @param url
-     * @param headers
-     * @param params
-     * @param fileMap
-     * @return
-     * @throws IOException
      */
-    public static String upload(String url, Map<String, String> headers, Map<String, String> params, Map<String, File[]> fileMap) throws IOException {
+    public static String upload(String url, Map<String, String> headers, Map<String, String> params, Map<String, File[]> fileMap, Progress progress) throws IOException {
         String boundary = "---------------------------";
-        String endLine = "--" + boundary + "--";
+        byte[] boundarys = boundary.getBytes("UTF-8");
+        byte[] nextLine = "\r\n".getBytes("UTF-8");
+        byte[] block = "--".getBytes("UTF-8");
+        byte[] colon = "\"".getBytes("UTF-8");
+        byte[] name = "Content-Disposition: form-data; name=".getBytes("UTF-8");
+        byte[] fileName = "; filename=".getBytes("UTF-8");
+        byte[] type = "Content-Type: application/octet-stream".getBytes("UTF-8");
+
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = getHttpURLConnection(_url);
@@ -193,90 +201,136 @@ public class Http {
             conn.setRequestProperty("Cookie", cookie);
         }
         conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Accept-Charset", "UTF-8");
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+        conn.setRequestProperty("Charsert", "UTF-8");
+        conn.setRequestProperty("Accept-Charset", "UTF-8");
         addHeaders(conn, headers);
 
-        int paramsBodyLength = 76;
-        int fileBodyLength = 129;
         int contentLength = 0;
         if (params != null && params.size() > 0) {
-            for (Map.Entry<String, String> entry : params.entrySet()) {//构造文本类型参数的实体数据
-                contentLength += (paramsBodyLength + entry.getKey().length() + entry.getValue().length());
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                String value = entry.getValue();
+                if (value == null || value.trim().length() == 0) {
+                    continue;
+                }
+                byte[] keyBytes = entry.getKey().getBytes("UTF-8");
+                byte[] valueBytes = value.getBytes("UTF-8");
+                contentLength += (block.length + boundarys.length + nextLine.length);
+                contentLength += (name.length + colon.length + keyBytes.length + colon.length + nextLine.length);
+                contentLength += nextLine.length;
+                contentLength += valueBytes.length;
+                contentLength += nextLine.length;
             }
         }
         if (fileMap != null && fileMap.size() > 0) {
             for (Map.Entry<String, File[]> entry : fileMap.entrySet()) {
-                String fieldName = entry.getKey();
                 File[] files = entry.getValue();
                 if (files == null || files.length == 0) {
                     continue;
                 }
+                byte[] fieldNameBytes = entry.getKey().getBytes("UTF-8");
                 for (File file : files) {
-                    contentLength += (fileBodyLength + fieldName.length() + file.getName().length() + file.length());
+                    byte[] fileNameBytes = file.getName().getBytes("UTF-8");
+                    contentLength += (block.length + boundarys.length + nextLine.length);
+                    contentLength += (name.length + colon.length + fieldNameBytes.length + colon.length + fileName.length + +colon.length + fileNameBytes.length + colon.length + nextLine.length);
+                    contentLength += type.length + nextLine.length;
+                    contentLength += nextLine.length;
+                    contentLength += file.length();
+                    contentLength += nextLine.length;
                 }
             }
         }
-        contentLength += (endLine.length());
+        contentLength += block.length + boundarys.length + block.length;
         conn.setFixedLengthStreamingMode(contentLength);
 
         int writeLength = 0;
 
         OutputStream out = conn.getOutputStream();
-        StringBuilder body = new StringBuilder();
         if (params != null && params.size() > 0) {
             for (Map.Entry<String, String> entry : params.entrySet()) {
-                body.delete(0, body.length());
-                body.append("--").append(boundary).append("\r\n");
-                body.append("Content-Disposition: form-data; name=\"").append(entry.getKey()).append("\"\r\n\r\n");
-                body.append(entry.getValue());
-                body.append("\r\n");
-                out.write(body.toString().getBytes("UTF-8"));
+                String value = entry.getValue();
+                if (value == null || value.trim().length() == 0) {
+                    continue;
+                }
+                byte[] keyBytes = entry.getKey().getBytes("UTF-8");
+                byte[] valueBytes = value.getBytes("UTF-8");
+                out.write(block);
+                out.write(boundarys);
+                out.write(nextLine);
+                writeLength += (block.length + boundarys.length + nextLine.length);
+                out.write(name);
+                out.write(colon);
+                out.write(keyBytes);
+                out.write(colon);
+                out.write(nextLine);
+                writeLength += (name.length + colon.length + keyBytes.length + colon.length + nextLine.length);
+                out.write(nextLine);
+                writeLength += nextLine.length;
+                out.write(valueBytes);
+                writeLength += valueBytes.length;
+                out.write(nextLine);
+                writeLength += nextLine.length;
                 out.flush();
-                writeLength += body.length();
-                progress(contentLength, writeLength);
+                progress(contentLength, writeLength, progress);
             }
         }
         byte[] buffer = new byte[10240];
         if (fileMap != null && fileMap.size() > 0) {
             for (Map.Entry<String, File[]> entry : fileMap.entrySet()) {
-                String fieldName = entry.getKey();
                 File[] files = entry.getValue();
                 if (files == null || files.length == 0) {
                     continue;
                 }
+                byte[] fieldNameBytes = entry.getKey().getBytes("UTF-8");
                 for (File file : files) {
-                    body.delete(0, body.length());
-                    body.append("--").append(boundary).append("\r\n");
-                    body.append("Content-Disposition: form-data; name=\"").append(fieldName).append("\"; filename=\"").append(file.getName()).append("\"\r\n");
-                    body.append("Content-Type: application/octet-stream\r\n\r\n");
-                    out.write(body.toString().getBytes("UTF-8"));
-                    writeLength += body.length();
-                    progress(contentLength, writeLength);
+                    byte[] fileNameBytes = file.getName().getBytes("UTF-8");
+                    out.write(block);
+                    out.write(boundarys);
+                    out.write(nextLine);
+                    writeLength += (block.length + boundarys.length + nextLine.length);
+                    out.write(name);
+                    out.write(colon);
+                    out.write(fieldNameBytes);
+                    out.write(colon);
+                    out.write(fileName);
+                    out.write(colon);
+                    out.write(fileNameBytes);
+                    out.write(colon);
+                    out.write(nextLine);
+                    writeLength += (name.length + colon.length + fieldNameBytes.length + colon.length + fileName.length + +colon.length + fileNameBytes.length + colon.length + nextLine.length);
+                    out.write(type);
+                    out.write(nextLine);
+                    writeLength += type.length + nextLine.length;
+                    out.write(nextLine);
+                    writeLength += nextLine.length;
+                    progress(contentLength, writeLength, progress);
                     FileInputStream fis = new FileInputStream(file);
                     int len;
                     while ((len = fis.read(buffer)) != -1) {
                         out.write(buffer, 0, len);
                         writeLength += len;
-                        progress(contentLength, writeLength);
+                        progress(contentLength, writeLength, progress);
                     }
-                    out.write("\r\n".getBytes("UTF-8"));
+                    out.write(nextLine);
+                    writeLength += nextLine.length;
                     out.flush();
                     fis.close();
-                    writeLength += 2;
-                    progress(contentLength, writeLength);
+                    progress(contentLength, writeLength, progress);
                 }
             }
         }
-        out.write(endLine.getBytes("UTF-8"));//发型结束符行
+        out.write(block);
+        out.write(boundarys);
+        out.write(block);
         out.flush();
-        writeLength += endLine.length();
-        progress(contentLength, writeLength);
+        writeLength += block.length + boundarys.length + block.length;
+        progress(contentLength, writeLength, progress);
 
+        StringBuilder body = new StringBuilder();
         int responseCode = conn.getResponseCode();
         if (responseCode == 200) {
+            contentLength = conn.getContentLength();
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            body.delete(0, body.length());
             String line;
             while ((line = reader.readLine()) != null) {
                 body.append(line);
@@ -290,6 +344,13 @@ public class Http {
         out.close();
         conn.disconnect();
         return body.length() > 0 ? body.toString() : null;
+    }
+
+    private static void progress(int contentLength, int writeLength, Progress progress) {
+        Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
+        if (progress != null) {
+            progress.progress(contentLength, writeLength);
+        }
     }
 
     public static boolean download(String url, Map<String, String> headers, InputStreamCallback callback) throws IOException {
