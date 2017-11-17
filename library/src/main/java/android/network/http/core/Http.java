@@ -164,6 +164,20 @@ public class Http {
         Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
     }
 
+    /**
+     * https://developer.android.com/reference/java/net/HttpURLConnection.html
+     * To upload data to a web server, configure the connection for output using setDoOutput(true).
+     * For best performance, you should call either setFixedLengthStreamingMode(int) when the body length is known in advance,
+     * or setChunkedStreamingMode(int) when it is not.
+     * Otherwise HttpURLConnection will be forced to buffer the complete request body in memory before it is transmitted,
+     * wasting (and possibly exhausting) heap and increasing latency.
+     * @param url
+     * @param headers
+     * @param params
+     * @param fileMap
+     * @return
+     * @throws IOException
+     */
     public static String upload(String url, Map<String, String> headers, Map<String, String> params, Map<String, File[]> fileMap) throws IOException {
         String boundary = "---------------------------";
         String endLine = "--" + boundary + "--";
