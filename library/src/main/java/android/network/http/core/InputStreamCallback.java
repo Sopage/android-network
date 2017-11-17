@@ -8,6 +8,6 @@ import java.io.InputStream;
  */
 public interface InputStreamCallback {
 
-    void stream(InputStream stream);
+    void stream(InputStream stream, int contentLength);
 
 }

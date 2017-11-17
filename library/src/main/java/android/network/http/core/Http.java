@@ -33,15 +33,6 @@ public class Http {
     private static SSLContext sslcontext;
     private static HostnameVerifier hostnameVerifier;
 
-    private static void addHeaders(HttpURLConnection conn, Map<String, String> headers) {
-        if (headers == null || headers.size() == 0) {
-            return;
-        }
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            conn.addRequestProperty(entry.getKey(), entry.getValue());
-        }
-    }
-
     public static String get(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
         if (params != null && params.size() > 0) {
             url = URLFormat.getFormatUrl(url, params);
@@ -329,7 +320,6 @@ public class Http {
         StringBuilder body = new StringBuilder();
         int responseCode = conn.getResponseCode();
         if (responseCode == 200) {
-            contentLength = conn.getContentLength();
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
@@ -346,36 +336,28 @@ public class Http {
         return body.length() > 0 ? body.toString() : null;
     }
 
-    private static void progress(int contentLength, int writeLength, Progress progress) {
-        Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
-        if (progress != null) {
-            progress.progress(contentLength, writeLength);
-        }
-    }
-
-    public static boolean download(String url, Map<String, String> headers, InputStreamCallback callback) throws IOException {
+    public static boolean download(String url, Map<String, String> headers, int range, InputStreamCallback callback) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
+        conn.setRequestProperty("Charsert", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
             conn.setRequestProperty("Cookie", cookie);
         }
-//        断点下载头
-//        if (file.exists() && file.length() > 0) {
-//            conn.addRequestProperty("Range", "bytes=" + file.length() + "-");
-//        } else {
-//            conn.addRequestProperty("Range", "bytes=0-");
-//        }
+        if (range > 0) {
+            conn.addRequestProperty("Range", "bytes=" + range + "-");
+        }
         addHeaders(conn, headers);
         int responseCode = conn.getResponseCode();
         boolean result = false;
-        if (responseCode == 200) {
+        if (responseCode == 200 || responseCode == 206) {
+            int contentLength = conn.getContentLength();
             InputStream stream = conn.getInputStream();
-            callback.stream(stream);
+            callback.stream(stream, contentLength);
             stream.close();
             result = true;
         }
@@ -385,6 +367,22 @@ public class Http {
         }
         conn.disconnect();
         return result;
+    }
+
+    private static void addHeaders(HttpURLConnection conn, Map<String, String> headers) {
+        if (headers == null || headers.size() == 0) {
+            return;
+        }
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            conn.addRequestProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
+    private static void progress(int contentLength, int writeLength, Progress progress) {
+        Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
+        if (progress != null) {
+            progress.progress(contentLength, writeLength);
+        }
     }
 
     private static String urlEncode(String params) {
