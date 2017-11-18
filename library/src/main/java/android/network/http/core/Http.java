@@ -121,7 +121,7 @@ public class Http {
         return body != null ? body.toString() : null;
     }
 
-    public static String post(String url, Map<String, String> headers, String json) throws IOException {
+    public static String postJson(String url, Map<String, String> headers, String json) throws IOException {
         URL _url = new URL(URLFormat.getFormatUrl(url, null));
         String host = _url.getHost();
         HttpURLConnection conn = getHttpURLConnection(_url);
@@ -355,7 +355,7 @@ public class Http {
         int responseCode = conn.getResponseCode();
         boolean result = false;
         if (responseCode == 200 || responseCode == 206) {
-            int contentLength = conn.getContentLength();
+            int contentLength = conn.getContentLength() + range;
             InputStream stream = conn.getInputStream();
             callback.stream(stream, contentLength);
             stream.close();
