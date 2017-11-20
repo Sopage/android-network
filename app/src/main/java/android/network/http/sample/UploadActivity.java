@@ -1,7 +1,7 @@
 package android.network.http.sample;
 
 import android.app.Activity;
-import android.network.http.core.Http;
+import android.network.http.Http;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  *
  */
-public class UploadActivity extends Activity implements View.OnClickListener{
+public class UploadActivity extends Activity implements View.OnClickListener {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class UploadActivity extends Activity implements View.OnClickListener{
 
     @Override
     public void onClick(View view) {
-        new Thread(){
+        new Thread() {
             @Override
             public void run() {
                 try {

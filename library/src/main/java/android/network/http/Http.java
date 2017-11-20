@@ -1,4 +1,4 @@
-package android.network.http.core;
+package android.network.http;
 
 import android.util.Log;
 
@@ -43,7 +43,6 @@ public class Http {
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
@@ -70,14 +69,13 @@ public class Http {
     }
 
     public static String post(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
-        URL _url = new URL(URLFormat.getFormatUrl(url, null));
+        URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
@@ -122,14 +120,13 @@ public class Http {
     }
 
     public static String postJson(String url, Map<String, String> headers, String json) throws IOException {
-        URL _url = new URL(URLFormat.getFormatUrl(url, null));
+        URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = getHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
@@ -170,7 +167,7 @@ public class Http {
      * Otherwise HttpURLConnection will be forced to buffer the complete request body in memory before it is transmitted,
      * wasting (and possibly exhausting) heap and increasing latency.
      */
-    public static String upload(String url, Map<String, String> headers, Map<String, String> params, Map<String, File[]> fileMap, Progress progress) throws IOException {
+    public static String upload(String url, Map<String, String> headers, Map<String, String> params, Map<String, File[]> fileMap, HttpProgress progress) throws IOException {
         String boundary = "---------------------------";
         byte[] boundarys = boundary.getBytes("UTF-8");
         byte[] nextLine = "\r\n".getBytes("UTF-8");
@@ -193,7 +190,6 @@ public class Http {
         }
         conn.setRequestProperty("Connection", "Keep-Alive");
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-        conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         addHeaders(conn, headers);
 
@@ -343,7 +339,6 @@ public class Http {
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Charsert", "UTF-8");
         String cookie = cookieCache.get(host);
         if (cookie != null) {
             conn.setRequestProperty("Cookie", cookie);
@@ -378,7 +373,7 @@ public class Http {
         }
     }
 
-    private static void progress(int contentLength, int writeLength, Progress progress) {
+    private static void progress(int contentLength, int writeLength, HttpProgress progress) {
         Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
         if (progress != null) {
             progress.progress(contentLength, writeLength);

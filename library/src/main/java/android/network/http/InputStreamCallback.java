@@ -1,4 +1,4 @@
-package android.network.http.core;
+package android.network.http;
 
 import java.io.InputStream;
 

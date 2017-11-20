@@ -1,9 +1,9 @@
-package android.network.http.core;
+package android.network.http;
 
 /**
  *
  */
-public interface Progress {
+public interface HttpProgress {
 
     void progress(int contentLength, int currentLength);
 
