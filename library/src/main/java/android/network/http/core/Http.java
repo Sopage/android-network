@@ -128,7 +128,7 @@ public class Http {
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
-        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         conn.setRequestProperty("Charsert", "UTF-8");
         conn.setRequestProperty("Accept-Charset", "UTF-8");
         String cookie = cookieCache.get(host);
