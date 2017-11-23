@@ -25,11 +25,6 @@ public class DreamSocketLogger implements Logger{
     }
 
     @Override
-    public void warn(String log, Throwable throwable) {
-        Log.w("ESA", log);
-    }
-
-    @Override
     public void error(String log) {
         Log.e("ESA", log);
     }

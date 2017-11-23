@@ -1,6 +1,8 @@
 package android.network.protocol;
 
-public class Packet extends Protocol {
+import com.dream.socket.codec.Message;
+
+public class Packet extends Message {
 
     /**
      * 当前消息内容
