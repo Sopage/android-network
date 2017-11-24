@@ -17,7 +17,7 @@ public class RemoteCallbackBinder extends IRemoteCallback.Stub {
     }
 
     @Override
-    public void onMessage(byte[] body) throws RemoteException {
+    public void onMessage(int type, byte[] body) throws RemoteException {
         if (callback != null && body != null) {
             callback.onMessage(body);
         }

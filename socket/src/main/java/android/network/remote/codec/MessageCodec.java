@@ -1,6 +1,6 @@
 package android.network.remote.codec;
 
-import android.network.protocol.Packet;
+import android.network.protocol.Body;
 import android.network.protocol.Protocol;
 
 import com.dream.socket.codec.MessageDecode;
@@ -15,39 +15,45 @@ import java.nio.ByteBuffer;
  */
 public class MessageCodec {
 
-    public MessageDecode<Packet> getDecode() {
-        return new MessageDecode<Packet>() {
+    public MessageDecode<Body> getDecode() {
+        return new MessageDecode<Body>() {
             @Override
-            protected Packet decode(SocketAddress address, ByteBuffer buffer) {
+            protected Body decode(SocketAddress address, ByteBuffer buffer) {
                 int limit = buffer.limit();
                 if (limit < Protocol.HEADER_LENGTH) {
                     return null;
                 }
-                char start = (char) buffer.get();
-                byte version = buffer.get();
-                int length = buffer.getInt();//包的总长度 包括头
-                buffer.get(Protocol.RETAIN);
-                char xy = (char) buffer.get();
-                if (limit < length) {
+                byte start = buffer.get();
+                if (start != '<') {
+                    buffer.clear();
                     return null;
                 }
-                byte[] bytes = new byte[length - Protocol.HEADER_LENGTH];
-                buffer.get(bytes);
-                char end = (char) buffer.get();
-                return new Packet(bytes);
+                int length = buffer.getInt();
+                if (length > limit) {
+                    return null;
+                }
+                int type = buffer.getInt();
+                buffer.get(Protocol.RETAIN);
+                byte[] body = new byte[length - Protocol.HEADER_LENGTH];
+                buffer.get(body);
+                byte end = buffer.get();
+                if (end != '>') {
+                    buffer.clear();
+                    return null;
+                }
+                return new Body().body(type, body);
             }
         };
     }
 
-    public MessageEncode<Packet> getEncode() {
-        return new MessageEncode<Packet>() {
+    public MessageEncode<Body> getEncode() {
+        return new MessageEncode<Body>() {
             @Override
-            public void encode(Packet data, ByteBuffer buffer) {
+            public void encode(Body data, ByteBuffer buffer) {
                 buffer.put(Protocol.START_TAG);
-                buffer.put(Protocol.VERSION);
                 buffer.putInt(data.getBody().length + Protocol.HEADER_LENGTH);
+                buffer.putInt(data.getType());
                 buffer.put(Protocol.RETAIN);
-                buffer.put(Protocol.VERIFY_TAG);
                 buffer.put(data.getBody());
                 buffer.put(Protocol.END_TAG);
             }

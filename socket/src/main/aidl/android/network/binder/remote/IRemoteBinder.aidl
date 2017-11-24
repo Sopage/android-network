@@ -12,6 +12,6 @@ interface IRemoteBinder {
 
     void stop();
 
-    boolean send(inout byte[] array);
+    boolean send(in int type, in byte[] array);
 
 }

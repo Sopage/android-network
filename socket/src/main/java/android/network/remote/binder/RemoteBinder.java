@@ -3,6 +3,7 @@ package android.network.remote.binder;
 import android.network.binder.remote.IRemoteBinder;
 import android.network.binder.remote.IRemoteCallback;
 import android.network.invoke.RemoteBinderInvoke;
+import android.network.protocol.Body;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
@@ -44,9 +45,9 @@ public class RemoteBinder extends IRemoteBinder.Stub {
     }
 
     @Override
-    public boolean send(byte[] array) throws RemoteException {
+    public boolean send(int type, byte[] array) throws RemoteException {
         if (callback != null) {
-            return callback.send(array);
+            return callback.send(type, array);
         }
         return false;
     }
@@ -55,7 +56,7 @@ public class RemoteBinder extends IRemoteBinder.Stub {
         RemoteBinderInvoke.onStatusCallback(callbackList, status);
     }
 
-    public void onMessageCallback(byte[] body) {
+    public void onMessageCallback(Body body) {
         RemoteBinderInvoke.onMessageCallback(callbackList, body);
     }
 
@@ -64,7 +65,7 @@ public class RemoteBinder extends IRemoteBinder.Stub {
 
         void stop();
 
-        boolean send(byte[] array);
+        boolean send(int type, byte[] array);
     }
 
 }

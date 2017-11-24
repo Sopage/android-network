@@ -2,6 +2,7 @@ package android.network.invoke;
 
 import android.network.binder.remote.IRemoteCallback;
 import android.network.binder.remote.IRemoteBinder;
+import android.network.protocol.Body;
 import android.os.RemoteCallbackList;
 
 /**
@@ -56,10 +57,10 @@ public class RemoteBinderInvoke {
         return false;
     }
 
-    public static boolean send(IRemoteBinder remote, byte[] data) {
+    public static boolean send(IRemoteBinder remote, int type,  byte[] data) {
         try {
             if (remote != null && data != null) {
-                return remote.send(data);
+                return remote.send(type, data);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -79,11 +80,11 @@ public class RemoteBinderInvoke {
         }
     }
 
-    public static void onMessageCallback(RemoteCallbackList<IRemoteCallback> callbackList, byte[] body) {
+    public static void onMessageCallback(RemoteCallbackList<IRemoteCallback> callbackList, Body body) {
         try {
             int n = callbackList.beginBroadcast();
             for (int i = 0; i < n; i++) {
-                callbackList.getBroadcastItem(i).onMessage(body);
+                callbackList.getBroadcastItem(i).onMessage(body.getType(), body.getBody());
             }
             callbackList.finishBroadcast();
         } catch (Exception e) {

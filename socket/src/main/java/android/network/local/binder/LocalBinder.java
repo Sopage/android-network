@@ -90,15 +90,15 @@ public class LocalBinder extends ILocalBinder.Stub {
         }
     }
 
-    public void loopInvokeSend(final byte[] array) {
+    public void loopInvokeSend(final int type, final byte[] array) {
         if (remoteBinder == null) {
             return;
         }
-        if (!RemoteBinderInvoke.send(remoteBinder.getRemoteBinder(), array)) {
+        if (!RemoteBinderInvoke.send(remoteBinder.getRemoteBinder(), type, array)) {
             new LoopInvoke(handler) {
                 @Override
                 protected boolean invoke() {
-                    return RemoteBinderInvoke.send(remoteBinder.getRemoteBinder(), array);
+                    return RemoteBinderInvoke.send(remoteBinder.getRemoteBinder(), type, array);
                 }
             }.start();
         }

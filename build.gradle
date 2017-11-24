@@ -5,6 +5,7 @@ buildscript {
         maven{
             url 'https://oss.sonatype.org/content/groups/public'
         }
+        google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
@@ -19,5 +20,6 @@ allprojects {
         maven{
             url 'https://oss.sonatype.org/content/groups/public'
         }
+        google()
     }
 }

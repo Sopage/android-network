@@ -1,8 +1,5 @@
 package android.network.local.binder;
 
-import android.network.protocol.protobuf.BodyType;
-import android.network.protocol.protobuf.BuildPacket;
-import android.network.protocol.protobuf.Protobuf;
 import android.os.RemoteException;
 
 /**
@@ -27,12 +24,12 @@ public class LocalBinderProxy {
     }
 
     public boolean login() {
-        binder.loopInvokeSend(BuildPacket.buildLogin(uid, token).getBody());
+//        binder.loopInvokeSend(BuildPacket.buildLogin(uid, token).getBody());
         return true;
     }
 
     public boolean sendText(int receiver, int type, String text) {
-        binder.loopInvokeSend(BuildPacket.buildTextMessage(uid, receiver, type, text).getBody());
+        binder.loopInvokeSend(type, text.getBytes());
         return true;
     }
 
@@ -42,20 +39,7 @@ public class LocalBinderProxy {
     }
 
     public void onMessage(byte[] data) {
-        try {
-            Protobuf.Body body = Protobuf.Body.parseFrom(data);
-            BodyType type = BodyType.getType(body.getType());
-            switch (type) {
-                case ACK:
-                    break;
-                case MESSAGE:
-                    Protobuf.Message message = Protobuf.Message.parseFrom(body.getContent());
-                    binder.onMessage(body.getSender(), message.getType(), message.getContent().toStringUtf8());
-                    break;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        binder.onMessage(1,1, new String(data));
     }
 
 
