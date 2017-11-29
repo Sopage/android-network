@@ -39,7 +39,7 @@ public class Http {
         }
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = getHttpURLConnection(_url);
+        HttpURLConnection conn = createHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -71,7 +71,7 @@ public class Http {
     public static String post(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = getHttpURLConnection(_url);
+        HttpURLConnection conn = createHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -122,7 +122,7 @@ public class Http {
     public static String postJson(String url, Map<String, String> headers, String json) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = getHttpURLConnection(_url);
+        HttpURLConnection conn = createHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -179,7 +179,7 @@ public class Http {
 
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = getHttpURLConnection(_url);
+        HttpURLConnection conn = createHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setDoInput(true);
         conn.setDoOutput(true);
@@ -335,7 +335,7 @@ public class Http {
     public static boolean download(String url, Map<String, String> headers, int range, InputStreamCallback callback) throws IOException {
         URL _url = new URL(url);
         String host = _url.getHost();
-        HttpURLConnection conn = getHttpURLConnection(_url);
+        HttpURLConnection conn = createHttpURLConnection(_url);
         conn.setConnectTimeout(3000);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Connection", "Keep-Alive");
@@ -392,7 +392,7 @@ public class Http {
         }
     }
 
-    private static HttpURLConnection getHttpURLConnection(URL url) throws IOException {
+    private static HttpURLConnection createHttpURLConnection(URL url) throws IOException {
         HttpURLConnection conn;
         if (url.toString().startsWith("https")) {
             HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
