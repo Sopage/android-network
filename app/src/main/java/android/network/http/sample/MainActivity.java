@@ -6,15 +6,12 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.network.binder.remote.IRemoteBinder;
-import android.network.listener.OnReceiverMessage;
 import android.network.protocol.Body;
 import android.network.remote.RemoteService;
-import android.network.sdk.DreamManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.Parcel;
 import android.os.RemoteException;
 import android.support.annotation.Nullable;
 import android.view.View;
@@ -71,42 +68,17 @@ public class MainActivity extends Activity {
         });
     }
 
-    public static final class TextBody extends Body implements android.os.Parcelable {
+    public static final class TextBody extends Body {
 
         private String text;
 
-        public TextBody(String text){
+        public TextBody(String text) {
             this.text = text;
         }
-        protected TextBody(Parcel in) {
-            text = in.readString();
-        }
-
-        public static final Creator<TextBody> CREATOR = new Creator<TextBody>() {
-            @Override
-            public TextBody createFromParcel(Parcel in) {
-                return new TextBody(in);
-            }
-
-            @Override
-            public TextBody[] newArray(int size) {
-                return new TextBody[size];
-            }
-        };
 
         @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            parcel.writeString(text);
-        }
-
-        @Override
-        public String toString() {
-            return text;
+        public byte[] getBody() {
+            return text.getBytes();
         }
     }
 

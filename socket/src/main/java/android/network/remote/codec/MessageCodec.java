@@ -3,8 +3,6 @@ package android.network.remote.codec;
 import android.network.protocol.Body;
 import android.network.protocol.Protocol;
 
-import com.dream.socket.codec.Message;
-
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 
@@ -12,10 +10,10 @@ import java.nio.ByteBuffer;
  * @author Mr.Huang
  * @date 2017/8/17
  */
-public class MessageCodec implements com.dream.socket.codec.MessageCodec {
+public class MessageCodec implements com.dream.socket.codec.MessageCodec<Body> {
 
     @Override
-    public Message decode(SocketAddress address, ByteBuffer buffer) {
+    public Body decode(SocketAddress address, ByteBuffer buffer) {
         int limit = buffer.limit();
         if (limit < Protocol.HEADER_LENGTH) {
             return null;
@@ -38,16 +36,17 @@ public class MessageCodec implements com.dream.socket.codec.MessageCodec {
             buffer.clear();
             return null;
         }
-        return new Body();
+        return new Body(type, body){};
     }
 
     @Override
-    public void encode(Message message, ByteBuffer buffer) {
-//        buffer.put(Protocol.START_TAG);
-//        buffer.putInt(data.getBody().length + Protocol.HEADER_LENGTH);
-//        buffer.putInt(data.getType());
-//        buffer.put(Protocol.RETAIN);
-//        buffer.put(data.getBody());
-//        buffer.put(Protocol.END_TAG);
+    public void encode(Body message, ByteBuffer buffer) {
+        byte[] body = message.getBody();
+        buffer.put(Protocol.START_TAG);
+        buffer.putInt(body.length + Protocol.HEADER_LENGTH);
+        buffer.putInt(message.getType());
+        buffer.put(Protocol.RETAIN);
+        buffer.put(body);
+        buffer.put(Protocol.END_TAG);
     }
 }
