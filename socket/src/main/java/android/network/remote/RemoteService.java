@@ -8,7 +8,9 @@ import android.network.remote.codec.MessageCodec;
 import android.network.remote.logger.DreamSocketLogger;
 import android.os.IBinder;
 
+import com.dream.socket.DreamSocket;
 import com.dream.socket.DreamTCPSocket;
+import com.dream.socket.codec.Message;
 import com.dream.socket.codec.MessageHandle;
 
 /**
@@ -18,7 +20,7 @@ import com.dream.socket.codec.MessageHandle;
 public class RemoteService extends Service implements RemoteBinder.OnRemoteMethodInvokeCallback {
 
     private RemoteBinder binder = new RemoteBinder();
-    private DreamTCPSocket socket;
+    private DreamSocket socket;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -35,11 +37,11 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
         binder.setOnRemoteMethodInvokeCallback(this);
         socket = new DreamTCPSocket("10.0.2.2", 6969);
         socket.setLogger(new DreamSocketLogger());
-        MessageCodec codec = new MessageCodec();
-        socket.codec(codec.getDecode(), handle, codec.getEncode());
+        socket.codec(new MessageCodec());
+        socket.handle(handle);
     }
 
-    private MessageHandle<Body> handle = new MessageHandle<Body>() {
+    private MessageHandle handle = new MessageHandle() {
         @Override
         public void onStatus(int status) {
             if (binder != null) {
@@ -48,9 +50,9 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
         }
 
         @Override
-        public void onMessage(Body data) {
+        public void onMessage(Message message) {
             if (binder != null) {
-                binder.onMessageCallback(data);
+                binder.onMessageCallback(message);
             }
         }
     };

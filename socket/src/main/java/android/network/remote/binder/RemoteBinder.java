@@ -7,6 +7,8 @@ import android.network.protocol.Body;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
+import com.dream.socket.codec.Message;
+
 /**
  * @author Mr.Huang
  * @date 2017/8/17
@@ -56,8 +58,8 @@ public class RemoteBinder extends IRemoteBinder.Stub {
         RemoteBinderInvoke.onStatusCallback(callbackList, status);
     }
 
-    public void onMessageCallback(Body body) {
-        RemoteBinderInvoke.onMessageCallback(callbackList, body);
+    public void onMessageCallback(Message message) {
+        RemoteBinderInvoke.onMessageCallback(callbackList, message);
     }
 
     public interface OnRemoteMethodInvokeCallback {

@@ -5,6 +5,8 @@ import android.network.binder.remote.IRemoteBinder;
 import android.network.protocol.Body;
 import android.os.RemoteCallbackList;
 
+import com.dream.socket.codec.Message;
+
 /**
  * @author Mr.Huang
  * @date 2017/8/21
@@ -80,11 +82,11 @@ public class RemoteBinderInvoke {
         }
     }
 
-    public static void onMessageCallback(RemoteCallbackList<IRemoteCallback> callbackList, Body body) {
+    public static void onMessageCallback(RemoteCallbackList<IRemoteCallback> callbackList, Message message) {
         try {
             int n = callbackList.beginBroadcast();
             for (int i = 0; i < n; i++) {
-                callbackList.getBroadcastItem(i).onMessage(body.getType(), body.getBody());
+//                callbackList.getBroadcastItem(i).onMessage(body.getType(), body.getBody());
             }
             callbackList.finishBroadcast();
         } catch (Exception e) {

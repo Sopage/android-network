@@ -34,13 +34,13 @@ public class MainActivity extends Activity {
         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DreamManager.getSender().login(101, "token");
+//                DreamManager.getSender().login(101, "token");
             }
         });
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DreamManager.getSender().sendText(1, 1, "message -> " + index);
+//                DreamManager.getSender().sendText(1, 1, "message -> " + index);
                 index ++;
             }
         });
