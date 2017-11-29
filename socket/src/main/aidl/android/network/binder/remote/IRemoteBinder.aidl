@@ -1,6 +1,7 @@
 package android.network.binder.remote;
 
 import android.network.binder.remote.IRemoteCallback;
+import android.network.protocol.Body;
 
 interface IRemoteBinder {
 
@@ -12,6 +13,6 @@ interface IRemoteBinder {
 
     void stop();
 
-    boolean send(in int type, in byte[] array);
+    boolean send(in Body body);
 
 }

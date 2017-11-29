@@ -59,10 +59,10 @@ public class RemoteBinderInvoke {
         return false;
     }
 
-    public static boolean send(IRemoteBinder remote, int type,  byte[] data) {
+    public static boolean send(IRemoteBinder remote, Body body) {
         try {
-            if (remote != null && data != null) {
-                return remote.send(type, data);
+            if (remote != null && body != null) {
+                return remote.send(body);
             }
         } catch (Exception e) {
             e.printStackTrace();

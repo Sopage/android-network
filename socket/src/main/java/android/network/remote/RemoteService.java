@@ -7,6 +7,7 @@ import android.network.remote.binder.RemoteBinder;
 import android.network.remote.codec.MessageCodec;
 import android.network.remote.logger.DreamSocketLogger;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.dream.socket.DreamSocket;
 import com.dream.socket.DreamTCPSocket;
@@ -72,9 +73,10 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
     }
 
     @Override
-    public boolean send(int type, byte[] array) {
+    public boolean send(Body body) {
+        Log.e("ESA", body.toString());
         if (socket != null) {
-            socket.send(new Body().body(type, array));
+            socket.send(new Body());
             return true;
         }
         return false;

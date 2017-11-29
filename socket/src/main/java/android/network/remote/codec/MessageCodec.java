@@ -38,7 +38,7 @@ public class MessageCodec implements com.dream.socket.codec.MessageCodec {
             buffer.clear();
             return null;
         }
-        return new Body().body(type, body);
+        return new Body();
     }
 
     @Override

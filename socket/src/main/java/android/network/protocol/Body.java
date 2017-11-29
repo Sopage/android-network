@@ -1,26 +1,40 @@
 package android.network.protocol;
 
+import android.os.Parcel;
+
 import com.dream.socket.codec.Message;
 
-public class Body extends Message implements Protocol {
+/**
+ * @author Mr.Huang
+ * @date 2017/11/29
+ */
+public class Body extends Message implements android.os.Parcelable, Protocol {
 
-    private int type;
-    private byte[] body;
+    public Body() {
 
-    public Body body(int type, byte[] body) {
-        this.type = type;
-        this.body = body;
-        return this;
     }
 
-    public byte[] getBody() {
-        if(body == null){
-            return new byte[0];
+    protected Body(Parcel in) {
+    }
+
+    public static final Creator<Body> CREATOR = new Creator<Body>() {
+        @Override
+        public Body createFromParcel(Parcel in) {
+            return new Body(in);
         }
-        return body;
+
+        @Override
+        public Body[] newArray(int size) {
+            return new Body[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
-    public int getType() {
-        return type;
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
     }
 }

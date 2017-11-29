@@ -47,9 +47,9 @@ public class RemoteBinder extends IRemoteBinder.Stub {
     }
 
     @Override
-    public boolean send(int type, byte[] array) throws RemoteException {
+    public boolean send(Body body) throws RemoteException {
         if (callback != null) {
-            return callback.send(type, array);
+            return callback.send(body);
         }
         return false;
     }
@@ -67,7 +67,7 @@ public class RemoteBinder extends IRemoteBinder.Stub {
 
         void stop();
 
-        boolean send(int type, byte[] array);
+        boolean send(Body body);
     }
 
 }
