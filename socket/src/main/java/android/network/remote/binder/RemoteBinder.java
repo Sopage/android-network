@@ -58,8 +58,8 @@ public class RemoteBinder extends IRemoteBinder.Stub {
         RemoteBinderInvoke.onStatusCallback(callbackList, status);
     }
 
-    public void onMessageCallback(Message message) {
-        RemoteBinderInvoke.onMessageCallback(callbackList, message);
+    public void onMessageCallback(Body body) {
+        RemoteBinderInvoke.onMessageCallback(callbackList, body);
     }
 
     public interface OnRemoteMethodInvokeCallback {

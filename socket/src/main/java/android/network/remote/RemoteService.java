@@ -10,7 +10,6 @@ import android.os.IBinder;
 
 import com.dream.socket.DreamSocket;
 import com.dream.socket.DreamTCPSocket;
-import com.dream.socket.codec.Message;
 import com.dream.socket.codec.MessageHandle;
 
 /**
@@ -41,7 +40,7 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
         socket.handle(handle);
     }
 
-    private MessageHandle handle = new MessageHandle() {
+    private MessageHandle<Body> handle = new MessageHandle<Body>() {
         @Override
         public void onStatus(int status) {
             if (binder != null) {
@@ -50,7 +49,7 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
         }
 
         @Override
-        public void onMessage(Message message) {
+        public void onMessage(Body message) {
             if (binder != null) {
                 binder.onMessageCallback(message);
             }
@@ -85,7 +84,6 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
         if (socket != null && socket.isConnected()) {
             socket.stop();
         }
-        Intent thisService = new Intent(this, RemoteService.class);
-        startService(thisService);
+        startService(new Intent(this, RemoteService.class));
     }
 }

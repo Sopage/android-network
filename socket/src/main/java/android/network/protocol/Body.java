@@ -11,7 +11,6 @@ import com.dream.socket.codec.Message;
 public class Body extends Message implements android.os.Parcelable, Protocol {
 
     private int type;
-    private int bodyLength;
     private byte[] body;
 
     public Body() {
@@ -21,14 +20,13 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
     public Body(int type, byte[] body) {
         this.type = type;
         this.body = body;
-        this.bodyLength = body.length;
     }
 
-    protected Body(Parcel in) {
+    private Body(Parcel in) {
         type = in.readInt();
-        bodyLength = in.readInt();
-        if (bodyLength > 0) {
-            body = new byte[bodyLength];
+        int length = in.readInt();
+        if (length > 0) {
+            body = new byte[length];
             in.readByteArray(body);
         }
     }
@@ -46,12 +44,12 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
     };
 
     @Override
-    public int describeContents() {
+    public final int describeContents() {
         return 0;
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
+    public final void writeToParcel(Parcel parcel, int i) {
         parcel.writeInt(type);
         body = getBody();
         if (body != null && body.length > 0) {
@@ -60,7 +58,7 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
         }
     }
 
-    public int getType() {
+    public final int getType() {
         return type;
     }
 
