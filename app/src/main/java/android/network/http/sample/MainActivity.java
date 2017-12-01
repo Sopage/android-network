@@ -28,12 +28,13 @@ public class MainActivity extends Activity {
         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DreamManager.getSender().send(new TextBody("hello world"));
+                DreamManager.getSender().login(1, "token");
             }
         });
         findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                DreamManager.getSender().send(new TextBody("message -> " + index));
                 index++;
             }
         });

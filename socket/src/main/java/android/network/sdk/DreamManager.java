@@ -25,9 +25,7 @@ public class DreamManager {
     }
 
     public static void unregister(Application application) {
-        if (connection != null) {
-            application.unbindService(connection);
-        }
+        application.unbindService(connection);
     }
 
     public static SenderManager getSender() {

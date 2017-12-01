@@ -9,9 +9,9 @@ interface IRemoteBinder {
 
     boolean unregister(IRemoteCallback cb);
 
-    void start();
+    void login(int uid, String token);
 
-    void stop();
+    void logout();
 
     boolean send(in Body body);
 

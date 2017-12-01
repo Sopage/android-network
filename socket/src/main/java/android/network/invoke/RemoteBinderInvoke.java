@@ -25,23 +25,23 @@ public class RemoteBinderInvoke {
         }
     }
 
-    public static void loopInvokeStart(Handler handler, final RemoteServiceConnection connection) {
-        if (!RemoteBinderInvoke.start(connection.getBinder())) {
+    public static void loopInvokeLogin(Handler handler, final RemoteServiceConnection connection, final int uid, final String token) {
+        if (!RemoteBinderInvoke.login(connection.getBinder(), uid, token)) {
             new LoopInvoke(handler) {
                 @Override
                 protected boolean invoke() {
-                    return RemoteBinderInvoke.start(connection.getBinder());
+                    return RemoteBinderInvoke.login(connection.getBinder(), uid, token);
                 }
             }.start();
         }
     }
 
-    public static void loopInvokeStop(Handler handler, final RemoteServiceConnection connection) {
-        if (!RemoteBinderInvoke.stop(connection.getBinder())) {
+    public static void loopInvokeLogout(Handler handler, final RemoteServiceConnection connection) {
+        if (!RemoteBinderInvoke.logout(connection.getBinder())) {
             new LoopInvoke(handler) {
                 @Override
                 protected boolean invoke() {
-                    return RemoteBinderInvoke.stop(connection.getBinder());
+                    return RemoteBinderInvoke.logout(connection.getBinder());
                 }
             }.start();
         }
@@ -80,10 +80,10 @@ public class RemoteBinderInvoke {
         return false;
     }
 
-    private static boolean start(IRemoteBinder remote) {
+    private static boolean login(IRemoteBinder remote, int uid, String token) {
         try {
             if (remote != null) {
-                remote.start();
+                remote.login(uid, token);
                 return true;
             }
         } catch (Exception e) {
@@ -92,10 +92,10 @@ public class RemoteBinderInvoke {
         return false;
     }
 
-    private static boolean stop(IRemoteBinder remote) {
+    private static boolean logout(IRemoteBinder remote) {
         try {
             if (remote != null) {
-                remote.stop();
+                remote.logout();
                 return true;
             }
         } catch (Exception e) {

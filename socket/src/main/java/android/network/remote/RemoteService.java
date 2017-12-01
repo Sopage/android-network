@@ -2,11 +2,18 @@ package android.network.remote;
 
 import android.app.Service;
 import android.content.Intent;
+import android.network.binder.remote.IRemoteBinder;
+import android.network.binder.remote.IRemoteCallback;
+import android.network.invoke.RemoteBinderInvoke;
+import android.network.model.Status;
 import android.network.protocol.Body;
-import android.network.remote.binder.RemoteBinder;
 import android.network.remote.codec.MessageCodec;
 import android.network.remote.logger.DreamSocketLogger;
+import android.network.sdk.body.StringBody;
 import android.os.IBinder;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
+import android.util.Log;
 
 import com.dream.socket.DreamSocket;
 import com.dream.socket.DreamTCPSocket;
@@ -16,24 +23,35 @@ import com.dream.socket.codec.MessageHandle;
  * @author Mr.Huang
  * @date 2017/8/16
  */
-public class RemoteService extends Service implements RemoteBinder.OnRemoteMethodInvokeCallback {
+public class RemoteService extends Service {
 
     private RemoteBinder binder = new RemoteBinder();
     private DreamSocket socket;
+    private int uid = -1;
+    private String token;
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.e("ESA", "onBind");
         return binder;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.e("ESA", "onStartCommand");
+        if (intent != null) {
+            int uid = intent.getIntExtra("uid", -1);
+            if (uid > 0) {
+                this.uid = uid;
+                token = intent.getStringExtra("token");
+            }
+        }
         return START_STICKY;
     }
 
     @Override
     public void onCreate() {
-        binder.setOnRemoteMethodInvokeCallback(this);
+        Log.e("ESA", "onCreate");
         socket = new DreamTCPSocket("10.0.2.2", 6969);
         socket.setLogger(new DreamSocketLogger());
         socket.codec(new MessageCodec());
@@ -46,6 +64,19 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
             if (binder != null) {
                 binder.onStatusCallback(status);
             }
+            switch (status) {
+                case Status.CONNECTED:
+                    if (uid > 0) {
+                        socket.send(getLoginBody(token));
+                    }
+                    break;
+                case Status.DISCONNECTED:
+                    break;
+                case Status.FAIL:
+                    break;
+                default:
+                    break;
+            }
         }
 
         @Override
@@ -57,33 +88,75 @@ public class RemoteService extends Service implements RemoteBinder.OnRemoteMetho
     };
 
     @Override
-    public void start() {
-        if (socket != null && !socket.isConnected()) {
-            socket.start();
-        }
-    }
-
-    @Override
-    public void stop() {
-        if (socket != null && socket.isConnected()) {
-            socket.stop();
-        }
-    }
-
-    @Override
-    public boolean send(Body body) {
-        if (socket != null) {
-            socket.send(body);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public void onDestroy() {
         if (socket != null && socket.isConnected()) {
             socket.stop();
         }
-        startService(new Intent(this, RemoteService.class));
+        Intent intent = new Intent(this, RemoteService.class);
+        if (uid > 0) {
+            intent.putExtra("uid", uid);
+            intent.putExtra("token", token);
+        }
+        startService(intent);
     }
+
+    private final class RemoteBinder extends IRemoteBinder.Stub {
+
+        private final RemoteCallbackList<IRemoteCallback> callbackList = new RemoteCallbackList<>();
+
+        @Override
+        public boolean register(IRemoteCallback cb) throws RemoteException {
+            return callbackList.register(cb);
+        }
+
+        @Override
+        public boolean unregister(IRemoteCallback cb) throws RemoteException {
+            return callbackList.unregister(cb);
+        }
+
+        @Override
+        public void login(int uid, String token) throws RemoteException {
+            RemoteService.this.uid = uid;
+            RemoteService.this.token = token;
+            if (socket != null) {
+                if(!socket.isConnected()){
+                    socket.start();
+                }else{
+                    send(getLoginBody(token));
+                }
+            }
+        }
+
+        @Override
+        public void logout() throws RemoteException {
+            uid = -1;
+            token = null;
+            if (socket != null && socket.isConnected()) {
+                socket.stop();
+            }
+        }
+
+        @Override
+        public boolean send(Body body) throws RemoteException {
+            if (socket != null && socket.isConnected()) {
+                body.setSender(uid);
+                return socket.send(body);
+            }
+            return false;
+        }
+
+        public void onStatusCallback(int status) {
+            RemoteBinderInvoke.onStatusCallback(callbackList, status);
+        }
+
+        public void onMessageCallback(Body body) {
+            RemoteBinderInvoke.onMessageCallback(callbackList, body);
+        }
+
+    }
+
+    private static Body getLoginBody(String token){
+        return new StringBody(token);
+    }
+
 }

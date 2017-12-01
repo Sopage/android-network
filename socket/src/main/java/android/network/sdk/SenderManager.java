@@ -16,13 +16,21 @@ public class SenderManager {
     private HandlerThread mHandlerThread = new HandlerThread("invoke remote binder");
     private Handler mHandler;
 
-    public SenderManager(RemoteServiceConnection connection){
+    public SenderManager(RemoteServiceConnection connection) {
         this.mConnection = connection;
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
     }
 
-    public void send(MessageBody body){
+    public void login(int uid, String token) {
+        RemoteBinderInvoke.loopInvokeLogin(mHandler, mConnection, uid, token);
+    }
+
+    public void logout() {
+        RemoteBinderInvoke.loopInvokeLogout(mHandler, mConnection);
+    }
+
+    public void send(MessageBody body) {
         RemoteBinderInvoke.loopInvokeSend(mHandler, mConnection, body);
     }
 }
