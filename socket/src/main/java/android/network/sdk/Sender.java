@@ -4,22 +4,19 @@ import android.network.invoke.RemoteBinderInvoke;
 import android.network.protocol.MessageBody;
 import android.network.remote.RemoteServiceConnection;
 import android.os.Handler;
-import android.os.HandlerThread;
 
 /**
  * @author Mr.Huang
  * @date 2017/8/21
  */
-public class SenderManager {
+public class Sender {
 
     private RemoteServiceConnection mConnection;
-    private HandlerThread mHandlerThread = new HandlerThread("invoke remote binder");
     private Handler mHandler;
 
-    public SenderManager(RemoteServiceConnection connection) {
+    public Sender(RemoteServiceConnection connection, Handler handler) {
         this.mConnection = connection;
-        mHandlerThread.start();
-        mHandler = new Handler(mHandlerThread.getLooper());
+        this.mHandler = handler;
     }
 
     public void login(int uid, String token) {

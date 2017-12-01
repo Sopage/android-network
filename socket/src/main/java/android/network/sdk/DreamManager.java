@@ -5,6 +5,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.network.remote.RemoteService;
 import android.network.remote.RemoteServiceConnection;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 
 /**
  * @author Mr.Huang
@@ -12,27 +15,35 @@ import android.network.remote.RemoteServiceConnection;
  */
 public class DreamManager {
 
-    private static RemoteServiceConnection connection = new RemoteServiceConnection();
-    private static ReceiverManager receiver;
-    private static SenderManager sender;
+    private static HandlerThread mHandlerThread = new HandlerThread("invoke remote binder");
+    private static RemoteServiceConnection mRemoteServiceConnection;
+    private static Receiver mReceiver;
+    private static Sender mSender;
 
     public static void register(Application application) {
-        sender = new SenderManager(connection);
-        receiver = new ReceiverManager(connection);
+        mHandlerThread.start();
+        Handler handler = new Handler(mHandlerThread.getLooper());
+        Handler mainHandler = new Handler(Looper.getMainLooper());
+        mReceiver = new Receiver(mainHandler);
+        mRemoteServiceConnection = new RemoteServiceConnection(mReceiver, handler);
+        mSender = new Sender(mRemoteServiceConnection, handler);
+
         Intent service = new Intent(application, RemoteService.class);
         application.startService(service);
-        application.bindService(service, connection, Service.BIND_AUTO_CREATE);
+        application.bindService(service, mRemoteServiceConnection, Service.BIND_AUTO_CREATE);
     }
 
     public static void unregister(Application application) {
-        application.unbindService(connection);
+        application.unbindService(mRemoteServiceConnection);
     }
 
-    public static SenderManager getSender() {
-        return sender;
+    public static Sender getSender() {
+        return mSender;
     }
 
-    public static ReceiverManager getReceiver() {
-        return receiver;
+    public static Receiver getReceiver() {
+        return mReceiver;
     }
+
+
 }

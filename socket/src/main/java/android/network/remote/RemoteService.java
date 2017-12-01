@@ -7,6 +7,7 @@ import android.network.binder.remote.IRemoteCallback;
 import android.network.invoke.RemoteBinderInvoke;
 import android.network.model.Status;
 import android.network.protocol.Body;
+import android.network.protocol.MessageBody;
 import android.network.remote.codec.MessageCodec;
 import android.network.remote.logger.DreamSocketLogger;
 import android.network.sdk.body.StringBody;
@@ -155,8 +156,13 @@ public class RemoteService extends Service {
 
     }
 
-    private static Body getLoginBody(String token){
-        return new StringBody(token);
+    private static Body getLoginBody(final String token){
+        return new MessageBody(0) {
+            @Override
+            public byte[] getBytes() {
+                return token.getBytes();
+            }
+        };
     }
 
 }
