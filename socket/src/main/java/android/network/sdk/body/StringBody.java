@@ -1,6 +1,6 @@
 package android.network.sdk.body;
 
-import android.network.protocol.MessageBody;
+import android.network.protocol.Body;
 
 /**
  * @author Mr.Huang
@@ -9,6 +9,11 @@ import android.network.protocol.MessageBody;
 public class StringBody extends MessageBody {
 
     private String string;
+
+    public StringBody(Body src){
+        super(src);
+        this.string = new String(src.getBody());
+    }
 
     public StringBody(String string){
         super(TYPE_STRING);
@@ -27,4 +32,8 @@ public class StringBody extends MessageBody {
         return new byte[0];
     }
 
+    @Override
+    public String toString() {
+        return string;
+    }
 }

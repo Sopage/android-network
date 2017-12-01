@@ -1,9 +1,15 @@
-package android.network.protocol;
+package android.network.sdk.body;
+
+import android.network.protocol.Body;
 
 /**
  *
  */
 public abstract class MessageBody extends Body {
+
+    public MessageBody(Body src) {
+        super(src);
+    }
 
     public MessageBody(int type) {
         super(type);

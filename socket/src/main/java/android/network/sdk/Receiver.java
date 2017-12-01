@@ -5,6 +5,7 @@ import android.network.protocol.Body;
 import android.network.sdk.listener.OnReceiverMessage;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,6 +34,7 @@ public class Receiver extends IRemoteCallback.Stub {
 
     @Override
     public final void onMessage(final Body body) throws RemoteException {
+        Log.e("ESA", body.getBodyType().toString());
         handler.post(new Runnable() {
             @Override
             public void run() {

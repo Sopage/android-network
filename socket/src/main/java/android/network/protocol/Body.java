@@ -1,5 +1,6 @@
 package android.network.protocol;
 
+import android.network.sdk.body.StringBody;
 import android.os.Parcel;
 
 import com.dream.socket.codec.Message;
@@ -19,6 +20,10 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
     private int sender;
     private int recipient;
     private byte[] body;
+
+    public Body(Body src){
+        copy(src, this);
+    }
 
     public Body(int type) {
         this(type, -1, -1);
@@ -40,6 +45,50 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
         this.type = type;
         this.sender = sender;
         this.recipient = recipient;
+        this.body = body;
+    }
+
+    public final String getId() {
+        return id;
+    }
+
+    public final void setId(String id) {
+        this.id = id;
+    }
+
+    public final byte[] getIdBytes() {
+        return getIdBytes(id);
+    }
+
+    public final int getType() {
+        return type;
+    }
+
+    public final void setType(int type) {
+        this.type = type;
+    }
+
+    public final int getSender() {
+        return sender;
+    }
+
+    public final void setSender(int sender) {
+        this.sender = sender;
+    }
+
+    public final int getRecipient() {
+        return recipient;
+    }
+
+    public final void setRecipient(int recipient) {
+        this.recipient = recipient;
+    }
+
+    public byte[] getBody() {
+        return body;
+    }
+
+    public final void setBody(byte[] body) {
         this.body = body;
     }
 
@@ -85,10 +134,6 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
         }
     }
 
-    public final String getId() {
-        return id;
-    }
-
     private static byte[] getIdBytes(String id) {
         if (id != null) {
             byte[] bytes = id.getBytes();
@@ -106,32 +151,23 @@ public class Body extends Message implements android.os.Parcelable, Protocol {
         return new byte[Protocol.ID_LENGTH];
     }
 
-    private static String id(){
+    private static String id() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    public final byte[] getIdBytes() {
-        return getIdBytes(id);
+    private static void copy(Body src, Body dest){
+        dest.setId(src.getId());
+        dest.setSender(src.getSender());
+        dest.setRecipient(src.getRecipient());
+        dest.setRemoteAddress(src.getRemoteAddress());
+        dest.setType(src.getType());
     }
 
-    public final int getType() {
-        return type;
+    public Body getBodyType(){
+        switch (type){
+            case TYPE_STRING:
+                return new StringBody(this);
+        }
+        return this;
     }
-
-    public final int getSender() {
-        return sender;
-    }
-
-    public final void setSender(int sender) {
-        this.sender = sender;
-    }
-
-    public final int getRecipient() {
-        return recipient;
-    }
-
-    public byte[] getBody() {
-        return body;
-    }
-
 }

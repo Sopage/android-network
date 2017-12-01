@@ -2,13 +2,10 @@ package android.network.http.sample;
 
 import android.app.Activity;
 import android.network.protocol.Body;
-import android.network.protocol.MessageBody;
 import android.network.sdk.DreamManager;
 import android.network.sdk.body.StringBody;
 import android.network.sdk.listener.OnReceiverMessage;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;

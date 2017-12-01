@@ -1,7 +1,7 @@
 package android.network.sdk;
 
 import android.network.invoke.RemoteBinderInvoke;
-import android.network.protocol.MessageBody;
+import android.network.sdk.body.MessageBody;
 import android.network.remote.RemoteServiceConnection;
 import android.os.Handler;
 

@@ -3,7 +3,7 @@ package android.network.invoke;
 import android.network.binder.remote.IRemoteBinder;
 import android.network.binder.remote.IRemoteCallback;
 import android.network.protocol.Body;
-import android.network.protocol.MessageBody;
+import android.network.sdk.body.MessageBody;
 import android.network.remote.RemoteServiceConnection;
 import android.os.Handler;
 import android.os.RemoteCallbackList;
