@@ -1,7 +1,7 @@
 package android.network.invoke;
 
 import android.network.binder.remote.IRemoteCallback;
-import android.network.protocol.Body;
+import android.network.protocol.Message;
 import android.os.RemoteException;
 
 /**
@@ -10,7 +10,7 @@ import android.os.RemoteException;
 public class RemoteCallbackBinder extends IRemoteCallback.Stub {
 
     @Override
-    public void onMessage(Body body) throws RemoteException {
+    public void onMessage(Message message) throws RemoteException {
 
     }
 

@@ -1,6 +1,6 @@
 package android.network.remote.codec;
 
-import android.network.protocol.Body;
+import android.network.protocol.Message;
 import android.network.protocol.Protocol;
 
 import java.net.SocketAddress;
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
  * @author Mr.Huang
  * @date 2017/8/17
  */
-public class MessageCodec implements com.dream.socket.codec.MessageCodec<Body> {
+public class MessageCodec implements com.dream.socket.codec.MessageCodec<Message> {
 
     //{起始标记   -byte     - 1}
     //{包总长度   -int      - 4}
@@ -21,7 +21,7 @@ public class MessageCodec implements com.dream.socket.codec.MessageCodec<Body> {
     //{包体内容   -byte[n]  - n}
     //{结束标记   -byte     - 1}
     @Override
-    public Body decode(SocketAddress address, ByteBuffer buffer) {
+    public Message decode(SocketAddress address, ByteBuffer buffer) {
         int limit = buffer.limit();
         if (limit < Protocol.HEADER_LENGTH) {
             return null;
@@ -47,7 +47,7 @@ public class MessageCodec implements com.dream.socket.codec.MessageCodec<Body> {
             buffer.clear();
             return null;
         }
-        return new Body(idBytes, type, sender, recipient, bodyBytes);
+        return new Message(new String(idBytes), type, sender, recipient, bodyBytes);
     }
 
     //{起始标记   -byte     - 1}
@@ -59,8 +59,8 @@ public class MessageCodec implements com.dream.socket.codec.MessageCodec<Body> {
     //{包体内容   -byte[n]  - n}
     //{结束标记   -byte     - 1}
     @Override
-    public void encode(Body message, ByteBuffer buffer) {
-        byte[] body = message.getBody();
+    public void encode(Message message, ByteBuffer buffer) {
+        byte[] body = message.getBodyArray();
         buffer.put(Protocol.START_TAG);
         buffer.putInt(body.length + Protocol.HEADER_LENGTH);
         buffer.putInt(message.getType());

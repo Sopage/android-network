@@ -1,7 +1,7 @@
 package android.network.sdk;
 
 import android.network.invoke.RemoteBinderInvoke;
-import android.network.sdk.body.MessageBody;
+import android.network.protocol.Message;
 import android.network.remote.RemoteServiceConnection;
 import android.os.Handler;
 
@@ -27,7 +27,7 @@ public class Sender {
         RemoteBinderInvoke.loopInvokeLogout(mHandler, mConnection);
     }
 
-    public void send(MessageBody body) {
-        RemoteBinderInvoke.loopInvokeSend(mHandler, mConnection, body);
+    public void send(Message message) {
+        RemoteBinderInvoke.loopInvokeSend(mHandler, mConnection, message);
     }
 }

@@ -1,6 +1,7 @@
 package android.network.sdk.listener;
 
-import android.network.protocol.Body;
+
+import android.network.protocol.Message;
 
 /**
  * @author Mr.Huang
@@ -8,7 +9,7 @@ import android.network.protocol.Body;
  */
 public interface OnReceiverMessage {
 
-    void onMessage(Body body);
+    void onMessage(Message message);
 
     void onStatus(int status);
 

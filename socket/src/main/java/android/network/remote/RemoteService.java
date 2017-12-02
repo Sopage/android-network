@@ -6,8 +6,7 @@ import android.network.binder.remote.IRemoteBinder;
 import android.network.binder.remote.IRemoteCallback;
 import android.network.invoke.RemoteBinderInvoke;
 import android.network.model.Status;
-import android.network.protocol.Body;
-import android.network.sdk.body.MessageBody;
+import android.network.protocol.Message;
 import android.network.remote.codec.MessageCodec;
 import android.network.remote.logger.DreamSocketLogger;
 import android.os.IBinder;
@@ -58,7 +57,7 @@ public class RemoteService extends Service {
         socket.handle(handle);
     }
 
-    private MessageHandle<Body> handle = new MessageHandle<Body>() {
+    private MessageHandle<Message> handle = new MessageHandle<Message>() {
         @Override
         public void onStatus(int status) {
             if (binder != null) {
@@ -80,7 +79,7 @@ public class RemoteService extends Service {
         }
 
         @Override
-        public void onMessage(Body message) {
+        public void onMessage(Message message) {
             if (binder != null) {
                 binder.onMessageCallback(message);
             }
@@ -119,9 +118,9 @@ public class RemoteService extends Service {
             RemoteService.this.uid = uid;
             RemoteService.this.token = token;
             if (socket != null) {
-                if(!socket.isConnected()){
+                if (!socket.isConnected()) {
                     socket.start();
-                }else{
+                } else {
                     send(getLoginBody(token));
                 }
             }
@@ -137,10 +136,9 @@ public class RemoteService extends Service {
         }
 
         @Override
-        public boolean send(Body body) throws RemoteException {
+        public boolean send(Message message) throws RemoteException {
             if (socket != null && socket.isConnected()) {
-                body.setSender(uid);
-                return socket.send(body);
+                return socket.send(message);
             }
             return false;
         }
@@ -149,19 +147,14 @@ public class RemoteService extends Service {
             RemoteBinderInvoke.onStatusCallback(callbackList, status);
         }
 
-        public void onMessageCallback(Body body) {
-            RemoteBinderInvoke.onMessageCallback(callbackList, body);
+        public void onMessageCallback(Message message) {
+            RemoteBinderInvoke.onMessageCallback(callbackList, message);
         }
 
     }
 
-    private static Body getLoginBody(final String token){
-        return new MessageBody(0) {
-            @Override
-            public byte[] getBytes() {
-                return token.getBytes();
-            }
-        };
+    private Message getLoginBody(final String token) {
+        return new Message("", 0, uid, -1, token.getBytes());
     }
 
 }

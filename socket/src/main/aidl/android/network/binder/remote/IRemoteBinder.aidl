@@ -1,7 +1,7 @@
 package android.network.binder.remote;
 
 import android.network.binder.remote.IRemoteCallback;
-import android.network.protocol.Body;
+import android.network.protocol.Message;
 
 interface IRemoteBinder {
 
@@ -13,6 +13,6 @@ interface IRemoteBinder {
 
     void logout();
 
-    boolean send(in Body body);
+    boolean send(in Message message);
 
 }

@@ -1,3 +1,3 @@
 package android.network.protocol;
 
-parcelable Body;
+parcelable Message;

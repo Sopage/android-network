@@ -6,17 +6,11 @@ import android.network.protocol.Body;
  * @author Mr.Huang
  * @date 2017/12/1
  */
-public class StringBody extends MessageBody {
+public class StringBody extends Body {
 
     private String string;
 
-    public StringBody(Body src){
-        super(src);
-        this.string = new String(src.getBody());
-    }
-
-    public StringBody(String string){
-        super(TYPE_STRING);
+    public StringBody(String string) {
         this.string = string;
     }
 
@@ -25,15 +19,12 @@ public class StringBody extends MessageBody {
     }
 
     @Override
-    public byte[] getBytes() {
-        if(string != null){
-            return string.getBytes();
-        }
-        return new byte[0];
+    public String toString() {
+        return string;
     }
 
     @Override
-    public String toString() {
-        return string;
+    public byte[] toArray() {
+        return string != null ? string.getBytes() : new byte[0];
     }
 }

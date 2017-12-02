@@ -2,8 +2,7 @@ package android.network.invoke;
 
 import android.network.binder.remote.IRemoteBinder;
 import android.network.binder.remote.IRemoteCallback;
-import android.network.protocol.Body;
-import android.network.sdk.body.MessageBody;
+import android.network.protocol.Message;
 import android.network.remote.RemoteServiceConnection;
 import android.os.Handler;
 import android.os.RemoteCallbackList;
@@ -47,12 +46,12 @@ public class RemoteBinderInvoke {
         }
     }
 
-    public static void loopInvokeSend(Handler handler, final RemoteServiceConnection connection, final MessageBody body) {
-        if (!RemoteBinderInvoke.send(connection.getBinder(), body)) {
+    public static void loopInvokeSend(Handler handler, final RemoteServiceConnection connection, final Message message) {
+        if (!RemoteBinderInvoke.send(connection.getBinder(), message)) {
             new LoopInvoke(handler) {
                 @Override
                 protected boolean invoke() {
-                    return RemoteBinderInvoke.send(connection.getBinder(), body);
+                    return RemoteBinderInvoke.send(connection.getBinder(), message);
                 }
             }.start();
         }
@@ -104,10 +103,10 @@ public class RemoteBinderInvoke {
         return false;
     }
 
-    private static boolean send(IRemoteBinder remote, MessageBody body) {
+    private static boolean send(IRemoteBinder remote, Message message) {
         try {
-            if (remote != null && body != null) {
-                return remote.send(body);
+            if (remote != null && message != null) {
+                return remote.send(message);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -127,11 +126,11 @@ public class RemoteBinderInvoke {
         }
     }
 
-    public static void onMessageCallback(RemoteCallbackList<IRemoteCallback> callbackList, Body body) {
+    public static void onMessageCallback(RemoteCallbackList<IRemoteCallback> callbackList, Message message) {
         try {
             int n = callbackList.beginBroadcast();
             for (int i = 0; i < n; i++) {
-                callbackList.getBroadcastItem(i).onMessage(body);
+                callbackList.getBroadcastItem(i).onMessage(message);
             }
             callbackList.finishBroadcast();
         } catch (Exception e) {
