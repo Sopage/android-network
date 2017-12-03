@@ -12,7 +12,6 @@ import android.network.remote.logger.DreamSocketLogger;
 import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.dream.socket.DreamSocket;
 import com.dream.socket.DreamTCPSocket;
@@ -31,13 +30,11 @@ public class RemoteService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        Log.e("ESA", "onBind");
         return binder;
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e("ESA", "onStartCommand");
         if (intent != null) {
             int uid = intent.getIntExtra("uid", -1);
             if (uid > 0) {
@@ -50,7 +47,6 @@ public class RemoteService extends Service {
 
     @Override
     public void onCreate() {
-        Log.e("ESA", "onCreate");
         socket = new DreamTCPSocket("10.0.2.2", 6969);
         socket.setLogger(new DreamSocketLogger());
         socket.codec(new MessageCodec());
@@ -66,7 +62,7 @@ public class RemoteService extends Service {
             switch (status) {
                 case Status.CONNECTED:
                     if (uid > 0) {
-                        socket.send(getLoginBody(token));
+                        socket.send(getLoginBody(uid, token));
                     }
                     break;
                 case Status.DISCONNECTED:
@@ -121,7 +117,7 @@ public class RemoteService extends Service {
                 if (!socket.isConnected()) {
                     socket.start();
                 } else {
-                    send(getLoginBody(token));
+                    send(getLoginBody(uid, token));
                 }
             }
         }
@@ -150,11 +146,9 @@ public class RemoteService extends Service {
         public void onMessageCallback(Message message) {
             RemoteBinderInvoke.onMessageCallback(callbackList, message);
         }
-
     }
 
-    private Message getLoginBody(final String token) {
-        return new Message("", 0, uid, -1, token.getBytes());
+    private static Message getLoginBody(int uid, String token) {
+        return new Message(0, uid, 0, token.getBytes());
     }
-
 }

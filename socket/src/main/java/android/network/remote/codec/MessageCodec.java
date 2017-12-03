@@ -66,8 +66,25 @@ public class MessageCodec implements com.dream.socket.codec.MessageCodec<Message
         buffer.putInt(message.getType());
         buffer.putInt(message.getSender());
         buffer.putInt(message.getRecipient());
-        buffer.put(message.getIdBytes());
+        buffer.put(id(message.getId()));
         buffer.put(body);
         buffer.put(Protocol.END_TAG);
+    }
+
+    private static byte[] id(String id) {
+        if (id != null) {
+            byte[] bytes = id.getBytes();
+            if (bytes.length == Protocol.ID_LENGTH) {
+                return bytes;
+            }
+            byte[] idBytes = new byte[Protocol.ID_LENGTH];
+            if (bytes.length > Protocol.ID_LENGTH) {
+                System.arraycopy(bytes, 0, idBytes, 0, idBytes.length);
+            } else {
+                System.arraycopy(bytes, 0, idBytes, 0, bytes.length);
+            }
+            return idBytes;
+        }
+        return new byte[Protocol.ID_LENGTH];
     }
 }

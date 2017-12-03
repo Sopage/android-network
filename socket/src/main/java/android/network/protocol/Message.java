@@ -16,22 +16,26 @@ public class Message extends com.dream.socket.codec.Message implements android.o
     private int type;
     private int sender;
     private int recipient;
-    private Body body;
+    private byte[] body;
 
-    public Message(int type, int sender) {
-        this(type, sender, null);
+    public Message(int sender, Body body) {
+        this(id(), sender, -1, body);
     }
 
-    public Message(int type, int sender, Body body) {
-        this(id(), type, sender, -1, body);
+    public Message(int sender, int recipient, Body body) {
+        this(id(), sender, recipient, body);
     }
 
-    public Message(String id, int type, int sender, int recipient, Body body) {
+    public Message(String id, int sender, int recipient, Body body) {
         this.id = id;
-        this.type = type;
+        this.type = body.getType();
         this.sender = sender;
         this.recipient = recipient;
-        this.body = body;
+        this.body = body.toArray();
+    }
+
+    public Message(int type, int sender, int recipient, byte[] body) {
+        this(id(), type, sender, recipient, body);
     }
 
     public Message(String id, int type, int sender, int recipient, byte[] body) {
@@ -39,15 +43,11 @@ public class Message extends com.dream.socket.codec.Message implements android.o
         this.type = type;
         this.sender = sender;
         this.recipient = recipient;
-        this.body = create(body);
+        this.body = body;
     }
 
     public final String getId() {
         return id;
-    }
-
-    public final byte[] getIdBytes() {
-        return getIdBytes(id);
     }
 
     public final int getType() {
@@ -63,14 +63,9 @@ public class Message extends com.dream.socket.codec.Message implements android.o
     }
 
     public final byte[] getBodyArray() {
-        byte[] body;
-        if (this.body == null || (body = this.body.toArray()) == null) {
+        if (this.body == null) {
             return new byte[0];
         }
-        return body;
-    }
-
-    public final Body getBody() {
         return body;
     }
 
@@ -83,7 +78,7 @@ public class Message extends com.dream.socket.codec.Message implements android.o
         if (length > 0) {
             byte[] body = new byte[length];
             in.readByteArray(body);
-            this.body = create(body);
+            this.body = body;
         }
     }
 
@@ -110,38 +105,24 @@ public class Message extends com.dream.socket.codec.Message implements android.o
         parcel.writeInt(type);
         parcel.writeInt(sender);
         parcel.writeInt(recipient);
-        byte[] array = body.toArray();
-        if (array != null && array.length > 0) {
-            parcel.writeInt(array.length);
-            parcel.writeByteArray(array);
+        if (body != null && body.length > 0) {
+            parcel.writeInt(body.length);
+            parcel.writeByteArray(body);
         }
-    }
-
-    private static byte[] getIdBytes(String id) {
-        if (id != null) {
-            byte[] bytes = id.getBytes();
-            if (bytes.length == Protocol.ID_LENGTH) {
-                return bytes;
-            }
-            byte[] idBytes = new byte[Protocol.ID_LENGTH];
-            if (bytes.length > Protocol.ID_LENGTH) {
-                System.arraycopy(bytes, 0, idBytes, 0, idBytes.length);
-            } else {
-                System.arraycopy(bytes, 0, idBytes, 0, bytes.length);
-            }
-            return idBytes;
-        }
-        return new byte[Protocol.ID_LENGTH];
     }
 
     private static String id() {
         return UUID.randomUUID().toString().replace("-", "");
     }
 
-    private Body create(byte[] body) {
+    public Body getBody() {
+        Body body = null;
         if (type == 0 || type == BodyType.STRING) {
-            return new StringBody(new String(body));
+            body = new StringBody();
         }
-        return null;
+        if (body != null) {
+            body.source(this.body);
+        }
+        return body;
     }
 }

@@ -1,19 +1,20 @@
 package android.network.http.sample;
 
 import android.app.Activity;
+import android.network.protocol.Body;
 import android.network.protocol.Message;
 import android.network.sdk.DreamManager;
-import android.network.sdk.body.BodyType;
 import android.network.sdk.body.StringBody;
 import android.network.sdk.listener.OnReceiverMessage;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements View.OnClickListener, OnReceiverMessage {
 
     public int index = 1;
+    private TextView tv_message;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -23,6 +24,7 @@ public class MainActivity extends Activity implements View.OnClickListener, OnRe
         findViewById(R.id.btn_login).setOnClickListener(this);
         findViewById(R.id.btn_logout).setOnClickListener(this);
         findViewById(R.id.btn_send).setOnClickListener(this);
+        tv_message = findViewById(R.id.tv_message);
     }
 
     @Override
@@ -33,7 +35,9 @@ public class MainActivity extends Activity implements View.OnClickListener, OnRe
         } else if (id == R.id.btn_logout) {
             DreamManager.getSender().logout();
         } else if (id == R.id.btn_send) {
-            Message message = new Message(BodyType.STRING, 123456, new StringBody("message -> " + index));
+            StringBody body = new StringBody();
+            body.setString("message -> " + index);
+            Message message = new Message(100000, 200000, body);
             DreamManager.getSender().send(message);
             index++;
         }
@@ -41,7 +45,11 @@ public class MainActivity extends Activity implements View.OnClickListener, OnRe
 
     @Override
     public void onMessage(Message message) {
-        Log.e("ESA", message.getBody().toString());
+        Body body = message.getBody();
+        if(body instanceof StringBody){
+            tv_message.append(((StringBody) body).getString());
+            tv_message.append("\n");
+        }
     }
 
     @Override

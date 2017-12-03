@@ -10,21 +10,26 @@ public class StringBody extends Body {
 
     private String string;
 
-    public StringBody(String string) {
-        this.string = string;
-    }
-
     public String getString() {
         return string;
     }
 
-    @Override
-    public String toString() {
-        return string;
+    public void setString(String string) {
+        this.string = string;
     }
 
     @Override
     public byte[] toArray() {
         return string != null ? string.getBytes() : new byte[0];
+    }
+
+    @Override
+    protected void source(byte[] body) {
+        string = new String(body);
+    }
+
+    @Override
+    protected int getType() {
+        return BodyType.STRING;
     }
 }

@@ -5,6 +5,9 @@ package android.network.protocol;
  */
 public abstract class Body {
 
-    public abstract byte[] toArray();
-    
+    protected abstract int getType();
+
+    protected abstract byte[] toArray();
+
+    protected abstract void source(byte[] body);
 }
