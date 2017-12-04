@@ -9,10 +9,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
@@ -34,9 +32,7 @@ public class Http {
     private static HostnameVerifier hostnameVerifier;
 
     public static String get(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
-        if (params != null && params.size() > 0) {
-            url = URLFormat.getFormatUrl(url, params);
-        }
+        url = URLFormat.getFormatUrl(url, params);
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = createHttpURLConnection(_url);
@@ -69,6 +65,7 @@ public class Http {
     }
 
     public static String post(String url, Map<String, String> headers, Map<String, String> params) throws IOException {
+        url = URLFormat.getFormatUrl(url, null);
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = createHttpURLConnection(_url);
@@ -91,7 +88,7 @@ public class Http {
                 if (isAppendAt) {
                     body.append("&");
                 }
-                body.append(entry.getKey()).append("=").append(urlEncode(entry.getValue()));
+                body.append(URLFormat.encode(entry.getKey())).append("=").append(URLFormat.encode(entry.getValue()));
                 isAppendAt = true;
             }
         }
@@ -120,6 +117,7 @@ public class Http {
     }
 
     public static String postJson(String url, Map<String, String> headers, String json) throws IOException {
+        url = URLFormat.getFormatUrl(url, null);
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = createHttpURLConnection(_url);
@@ -177,6 +175,7 @@ public class Http {
         byte[] fileName = "; filename=".getBytes("UTF-8");
         byte[] type = "Content-Type: application/octet-stream".getBytes("UTF-8");
 
+        url = URLFormat.getFormatUrl(url, null);
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = createHttpURLConnection(_url);
@@ -333,6 +332,7 @@ public class Http {
     }
 
     public static boolean download(String url, Map<String, String> headers, int range, InputStreamCallback callback) throws IOException {
+        url = URLFormat.getFormatUrl(url, null);
         URL _url = new URL(url);
         String host = _url.getHost();
         HttpURLConnection conn = createHttpURLConnection(_url);
@@ -377,18 +377,6 @@ public class Http {
         Log.e("ESA", String.valueOf(((float) writeLength) / ((float) contentLength)));
         if (progress != null) {
             progress.progress(contentLength, writeLength);
-        }
-    }
-
-    private static String urlEncode(String params) {
-        try {
-            if (params == null) {
-                return "";
-            }
-            return URLEncoder.encode(params, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            return params;
         }
     }
 

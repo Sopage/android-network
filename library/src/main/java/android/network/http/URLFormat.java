@@ -1,5 +1,6 @@
 package android.network.http;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -27,7 +28,19 @@ public class URLFormat {
             String query = url.getQuery();
             boolean isQuery = (query != null && query.trim().length() > 0);
             if (isQuery) {
-                sb.append("?").append(query);
+                sb.append("?");
+                String[] ps = query.split("&");
+                int len = ps.length;
+                for (int i = 0; i < len; i++) {
+                    String p = ps[i];
+                    String[] kv = p.split("=");
+                    if (kv.length == 2) {
+                        if ((i + 1) != len) {
+                            sb.append("&");
+                        }
+                        sb.append(encode(kv[0])).append("=").append(encode(kv[1]));
+                    }
+                }
             }
             if (params != null && !params.isEmpty()) {
                 for (Map.Entry<String, String> param : params.entrySet()) {
@@ -35,13 +48,14 @@ public class URLFormat {
                     if (value == null || value.trim().length() == 0) {
                         continue;
                     }
+                    String key = param.getKey();
                     if (isQuery) {
                         sb.append("&");
                     } else {
                         sb.append("?");
                         isQuery = true;
                     }
-                    sb.append(param.getKey()).append("=").append(URLEncoder.encode(value, "UTF-8"));
+                    sb.append(encode(key)).append("=").append(encode(value));
                 }
             }
             return sb.append(isQuery ? "&" : "?").append("timestamp=").append(System.currentTimeMillis()).toString();
@@ -75,4 +89,15 @@ public class URLFormat {
         return fixPathStart(path);
     }
 
+    public static String encode(String params) {
+        try {
+            if (params == null) {
+                return "";
+            }
+            return URLEncoder.encode(params, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return params;
+        }
+    }
 }
